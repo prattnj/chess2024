@@ -10,7 +10,7 @@ import java.util.Arrays;
  */
 public class ChessBoard {
 
-    private final ChessPiece[][] board;
+    private ChessPiece[][] board;
 
     public ChessBoard() {
         board = new ChessPiece[8][8];
@@ -42,6 +42,8 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
+        board = new ChessPiece[8][8];
+
         // WHITE PIECES
         ChessGame.TeamColor white = ChessGame.TeamColor.WHITE;
         board[0][0] = new ChessPiece(white, ChessPiece.PieceType.ROOK);

@@ -55,6 +55,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if (board.getPiece(myPosition) == null) return new HashSet<>();
+        if (!validatePosition(myPosition)) return new HashSet<>();
         return switch (board.getPiece(myPosition).getPieceType()) {
             case KING -> kingMoves(board, myPosition);
             case QUEEN -> queenMoves(board, myPosition);
@@ -158,11 +159,38 @@ public class ChessPiece {
     }
 
     private Collection<ChessMove> pawnMoves(ChessBoard board, ChessPosition myPosition) {
-        return null;
+        Collection<ChessMove> moves = new HashSet<>();
+        ChessGame.TeamColor color = board.getPiece(myPosition).getTeamColor();
+        int row = myPosition.getRow();
+        int baseRow = color == ChessGame.TeamColor.WHITE ? 2 : 7;
+        int promoRow = 9 - baseRow; // either 2 or 7, opposite of base row
+        int doubleRow = color == ChessGame.TeamColor.WHITE ? 4 : 5;
+        int direction = color == ChessGame.TeamColor.WHITE ? 1 : -1;
+
+        // forward/diagonal moves
+        for (int i = -1; i <= 1; i++) {
+            Collection<ChessMove> toValidate = new HashSet<>();
+            ChessPosition target = new ChessPosition(row + direction, myPosition.getColumn() + i);
+            if (row == promoRow) {
+                for (PieceType type : promoPieces()) toValidate.add(new ChessMove(myPosition, target, type));
+            } else toValidate.add(new ChessMove(myPosition, target, null));
+            for (ChessMove move : toValidate) validateAndAdd(moves, board, move);
+        }
+        // double square
+        if (row == baseRow) {
+            // if one square forward is empty
+            if (board.getPiece(new ChessPosition(row + direction, myPosition.getColumn())) == null) {
+                ChessMove doubleMove = new ChessMove(myPosition, new ChessPosition(doubleRow, myPosition.getColumn()), null);
+                validateAndAdd(moves, board, doubleMove);
+            }
+        }
+
+        return moves;
     }
 
     // return value is used for whether to continue looping (bishop, rook, queen)
     private boolean validateAndAdd(Collection<ChessMove> moves, ChessBoard board, ChessMove move) {
+        boolean isPawn = board.getPiece(move.getStartPosition()).getPieceType() == PieceType.PAWN;
         if (move.getStartPosition().equals(move.getEndPosition())) return true;
 
         // validate positions
@@ -170,14 +198,32 @@ public class ChessPiece {
 
         ChessPiece mover = board.getPiece(move.getStartPosition());
         ChessPiece victim = board.getPiece(move.getEndPosition());
+        boolean victimIsFriend = victim != null && victim.color == mover.color;
         if (mover == null) return false; // shouldn't happen
-        if (victim != null && victim.color == mover.color) return false;
+        if (victimIsFriend) return false;
+        if (isPawn) {
+            // diagonal
+            if (move.getStartPosition().getColumn() != move.getEndPosition().getColumn()) {
+                if (victim == null) return false;
+            } else { // forward
+                if (victim != null) return false;
+            }
+        }
         moves.add(move);
         return victim == null;
     }
 
     private boolean validatePosition(ChessPosition pos) {
         return pos.getRow() >= 1 && pos.getRow() <= 8 && pos.getColumn() >= 1 && pos.getColumn() <= 8;
+    }
+
+    private Collection<PieceType> promoPieces() {
+        Collection<PieceType> promos = new HashSet<>();
+        promos.add(PieceType.QUEEN);
+        promos.add(PieceType.ROOK);
+        promos.add(PieceType.KNIGHT);
+        promos.add(PieceType.BISHOP);
+        return promos;
     }
 
     @Override
