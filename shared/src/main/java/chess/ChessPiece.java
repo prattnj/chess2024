@@ -55,7 +55,7 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         if (board.getPiece(myPosition) == null) return new HashSet<>();
-        if (!validatePosition(myPosition)) return new HashSet<>();
+        if (!ChessUtil.validatePosition(myPosition)) return new HashSet<>();
         return switch (board.getPiece(myPosition).getPieceType()) {
             case KING -> kingMoves(board, myPosition);
             case QUEEN -> queenMoves(board, myPosition);
@@ -194,7 +194,7 @@ public class ChessPiece {
         if (move.getStartPosition().equals(move.getEndPosition())) return true;
 
         // validate positions
-        if (!validatePosition(move.getStartPosition()) || !validatePosition(move.getEndPosition())) return false;
+        if (!ChessUtil.validatePosition(move.getStartPosition()) || !ChessUtil.validatePosition(move.getEndPosition())) return false;
 
         ChessPiece mover = board.getPiece(move.getStartPosition());
         ChessPiece victim = board.getPiece(move.getEndPosition());
@@ -211,10 +211,6 @@ public class ChessPiece {
         }
         moves.add(move);
         return victim == null;
-    }
-
-    private boolean validatePosition(ChessPosition pos) {
-        return pos.getRow() >= 1 && pos.getRow() <= 8 && pos.getColumn() >= 1 && pos.getColumn() <= 8;
     }
 
     private Collection<PieceType> promoPieces() {
