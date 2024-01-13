@@ -6,6 +6,7 @@ import spark.*;
 import util.Util;
 
 import java.net.URISyntaxException;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,12 +15,15 @@ public class Server {
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
-        try {
+        /*try {
             String webDir = Server.class.getProtectionDomain().getCodeSource().getLocation().toURI().getSchemeSpecificPart() + "web";
             Spark.externalStaticFileLocation(webDir.substring(1));
         } catch (URISyntaxException ex) {
             throw new RuntimeException(ex);
-        }
+        }*/
+
+        var webDir = Paths.get(Server.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "web");
+        Spark.externalStaticFileLocation(webDir.toString());
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", new Handler(new ClearService(), null, false));
