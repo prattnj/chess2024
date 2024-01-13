@@ -69,7 +69,7 @@ public class ChessGame {
         }
 
         // add castling / en passant
-        if (piece.getPieceType() == ChessPiece.PieceType.KING) moves.addAll(addCastling(piece));
+        //if (piece.getPieceType() == ChessPiece.PieceType.KING) moves.addAll(addCastling(piece));
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN) moves.addAll(addEnPassant(piece));
 
         return moves;
