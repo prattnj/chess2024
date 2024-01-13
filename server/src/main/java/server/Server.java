@@ -5,6 +5,7 @@ import service.*;
 import spark.*;
 import util.Util;
 
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,7 +14,12 @@ public class Server {
     public int run(int desiredPort) {
         Spark.port(desiredPort);
 
-        Spark.staticFiles.location("web");
+        try {
+            String webDir = Server.class.getProtectionDomain().getCodeSource().getLocation().toURI().getSchemeSpecificPart() + "web";
+            Spark.externalStaticFileLocation(webDir.substring(1));
+        } catch (URISyntaxException ex) {
+            throw new RuntimeException(ex);
+        }
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", new Handler(new ClearService(), null, false));
@@ -56,8 +62,8 @@ public class Server {
             Util.CURRENT_DAO_TYPE = dbType;
 
             // run server
-            System.out.println("Server listening on port " + port + "...");
-            new Server().run(port);
+            int chosenPort = new Server().run(port);
+            System.out.println("Server listening on port " + chosenPort + "...");
 
         } catch (Exception e) {
             e.printStackTrace();
