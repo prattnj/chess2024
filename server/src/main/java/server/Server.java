@@ -22,7 +22,7 @@ public class Server {
         Spark.delete("/session", new Handler(new LogoutService(), null, true));
         Spark.post("/game", new Handler(new CreateGameService(), CreateGameRequest.class, true));
         Spark.put("/game", new Handler(new JoinGameService(), JoinGameRequest.class, true));
-        //Spark.get("/game", new Handler(new ListGamesService(), null, true));
+        Spark.get("/game", new Handler(new ListGamesService(), null, true));
 
         Spark.awaitInitialization();
         return Spark.port();
