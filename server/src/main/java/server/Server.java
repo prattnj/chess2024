@@ -5,7 +5,6 @@ import service.*;
 import spark.*;
 import util.Util;
 
-import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -13,16 +12,6 @@ public class Server {
 
     public int run(int desiredPort) {
         Spark.port(desiredPort);
-
-        /*try {
-            String webDir = Server.class.getProtectionDomain().getCodeSource().getLocation().toURI().getSchemeSpecificPart() + "web";
-            Spark.externalStaticFileLocation(webDir.substring(1));
-        } catch (URISyntaxException ex) {
-            throw new RuntimeException(ex);
-        }*/
-
-        /*var webDir = Paths.get(Server.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "web");
-        Spark.externalStaticFileLocation(webDir.toString());*/
 
         Spark.staticFiles.location("web");
 
