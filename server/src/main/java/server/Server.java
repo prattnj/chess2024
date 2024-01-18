@@ -1,11 +1,13 @@
 package server;
 
+import dataAccess.mysql.DatabaseManager;
 import model.request.*;
 import service.*;
 import spark.*;
 import util.Util;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 public class Server {
@@ -38,7 +40,7 @@ public class Server {
         validDbTypes.add("ram");
         validDbTypes.add("mysql");
 
-        String dbType;
+        String dbType = Util.DB_TYPE;
         String usage = "Usage: java server.Server.main <port> [database]";
 
         if (args == null || args.length == 0) {
@@ -52,8 +54,9 @@ public class Server {
             if (args.length > 1) {
                 dbType = args[1];
                 if (!validDbTypes.contains(dbType)) throw new RuntimeException("Invalid database type");
-            } else dbType = "ram";
-            Util.CURRENT_DAO_TYPE = dbType;
+            }
+            Util.DB_TYPE = dbType;
+            if (Objects.equals(dbType, "mysql")) DatabaseManager.createDatabase();
 
             // run server
             int chosenPort = new Server().run(port);

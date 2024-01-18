@@ -11,9 +11,10 @@ import java.util.UUID;
 public class Util {
 
     /**
-     * Represents the current database being used. Currently, supports "ram" and "mysql"
+     * Represents the current database being used. Currently, supports "ram" and "mysql".
+     * Can be overridden when running server.Server
      */
-    public static String CURRENT_DAO_TYPE;
+    public static String DB_TYPE = "mysql";
 
     public static String INVALID_TOKEN = "invalid authToken";
 

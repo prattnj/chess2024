@@ -16,7 +16,6 @@ public abstract class Service {
     protected UserDAO udao;
     protected GameDAO gdao;
     protected AuthTokenDAO adao;
-    private Transaction transaction;
 
     /**
      * Handles all common service functionality including DAOs, validating tokens, and committing changes if necessary
@@ -29,26 +28,17 @@ public abstract class Service {
 
         try {
             // Initialize DAOs and DB transaction
-            transaction = DAOFactory.getNewTransaction();
-            transaction.openTransaction();
-
-            udao = DAOFactory.getNewUserDAO(transaction);
-            gdao = DAOFactory.getNewGameDAO(transaction);
-            adao = DAOFactory.getNewAuthTokenDAO(transaction);
+            udao = DAOFactory.getNewUserDAO();
+            gdao = DAOFactory.getNewGameDAO();
+            adao = DAOFactory.getNewAuthTokenDAO();
 
             // Validate authToken
             if (authToken != null) if (adao.find(authToken) == null) throw new UnauthorizedException(Util.INVALID_TOKEN);
 
             // Execute service logic
-            BaseResponse response = doService(request, authToken);
 
-            // Commit changes
-            transaction.closeTransaction(true);
-
-            return response;
+            return doService(request, authToken);
         } catch (ServerErrorException | DataAccessException e) {
-            // Rollback changes
-            transaction.closeTransaction(false);
             e.printStackTrace();
             throw new ServerErrorException();
         }
