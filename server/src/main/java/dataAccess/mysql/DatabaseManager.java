@@ -46,6 +46,47 @@ public class DatabaseManager {
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
+        createTables();
+    }
+
+    private static void createTables() throws DataAccessException {
+        String userTable = """
+                CREATE TABLE IF NOT EXISTS user (
+                    userID int NOT NULL,
+                    username varchar(255) NOT NULL UNIQUE,
+                    password varchar(255) NOT NULL,
+                    email varchar(255) NOT NULL,
+                    PRIMARY KEY (userID)
+                );
+                """;
+        String gameTable = """
+                CREATE TABLE IF NOT EXISTS game (
+                    gameID int NOT NULL,
+                    whitePlayerID int,
+                    blackPlayerID int,
+                    gameName varchar(255),
+                    game text NOT NULL,
+                    PRIMARY KEY (gameID)
+                );
+                """;
+        String authTable = """
+                CREATE TABLE IF NOT EXISTS auth (
+                    authToken varchar(255) NOT NULL,
+                    userID int NOT NULL,
+                    PRIMARY KEY (authToken)
+                );
+                """;
+        try (var conn = getConnection()) {
+            PreparedStatement userStmt = conn.prepareStatement(userTable);
+            PreparedStatement gameStmt = conn.prepareStatement(gameTable);
+            PreparedStatement authStmt = conn.prepareStatement(authTable);
+            userStmt.executeUpdate();
+            gameStmt.executeUpdate();
+            authStmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new DataAccessException(e.getMessage());
+        }
     }
 
     /**

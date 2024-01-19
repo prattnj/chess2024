@@ -1,11 +1,13 @@
 package server;
 
+import dataAccess.DataAccessException;
 import dataAccess.mysql.DatabaseManager;
 import model.request.*;
 import service.*;
 import spark.*;
 import util.Util;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -16,6 +18,13 @@ public class Server {
         Spark.port(desiredPort);
 
         Spark.staticFiles.location("web");
+
+        try {
+            if (Objects.equals(Util.DB_TYPE, "mysql")) DatabaseManager.createDatabase();
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+        }
+
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", new Handler(new ClearService(), null, false));
@@ -56,7 +65,6 @@ public class Server {
                 if (!validDbTypes.contains(dbType)) throw new RuntimeException("Invalid database type");
             }
             Util.DB_TYPE = dbType;
-            if (Objects.equals(dbType, "mysql")) DatabaseManager.createDatabase();
 
             // run server
             int chosenPort = new Server().run(port);
