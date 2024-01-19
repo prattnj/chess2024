@@ -7,7 +7,6 @@ import service.*;
 import spark.*;
 import util.Util;
 
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -25,6 +24,7 @@ public class Server {
             e.printStackTrace();
         }
 
+        Spark.webSocket("/connect", new WebSocketHandler());
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", new Handler(new ClearService(), null, false));
@@ -41,6 +41,7 @@ public class Server {
 
     public void stop() {
         Spark.stop();
+        Spark.awaitStop();
     }
 
     public static void main(String[] args) {

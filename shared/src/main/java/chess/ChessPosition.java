@@ -18,6 +18,12 @@ public class ChessPosition {
         this.col = col;
     }
 
+    public ChessPosition(String str) {
+        // WARNING: Assumes that str is formatted like "a1"
+        col = str.charAt(0) - 'a' + 1;
+        row = Integer.parseInt(String.valueOf(str.charAt(1)));
+    }
+
     /**
      * @return which row this position is in
      * 1 codes for the bottom row

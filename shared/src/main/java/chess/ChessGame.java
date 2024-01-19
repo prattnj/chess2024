@@ -184,6 +184,14 @@ public class ChessGame {
         return board;
     }
 
+    public boolean isOver() {
+        return isOver;
+    }
+
+    public void setIsOver(boolean isOver) {
+        this.isOver = isOver;
+    }
+
     private void toggleTeamTurn() {
         teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
     }
