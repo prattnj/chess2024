@@ -14,7 +14,7 @@ public class Util {
      * Represents the current database being used. Currently, supports "ram" and "mysql".
      * Can be overridden when running server.Server
      */
-    public static String dbType = "mysql";
+    public static String DB_TYPE = "ram";
 
     public static final String INVALID_TOKEN = "invalid authToken";
 
