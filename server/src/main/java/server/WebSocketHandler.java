@@ -21,9 +21,9 @@ public class WebSocketHandler {
     private final Map<Integer, Set<Session>> cache = new HashMap<>();
     private UserDAO udao;
     private GameDAO gdao;
-    private final ServerMessage.ServerMessageType LOAD_GAME = ServerMessage.ServerMessageType.LOAD_GAME;
-    private final ServerMessage.ServerMessageType ERROR = ServerMessage.ServerMessageType.ERROR;
-    private final ServerMessage.ServerMessageType NOTIFICATION = ServerMessage.ServerMessageType.NOTIFICATION;
+    private static final ServerMessage.ServerMessageType LOAD_GAME = ServerMessage.ServerMessageType.LOAD_GAME;
+    private static final ServerMessage.ServerMessageType ERROR = ServerMessage.ServerMessageType.ERROR;
+    private static final ServerMessage.ServerMessageType NOTIFICATION = ServerMessage.ServerMessageType.NOTIFICATION;
     private Session root;
     private int currentGameID;
     private int currentUserID;

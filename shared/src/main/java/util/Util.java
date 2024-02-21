@@ -14,13 +14,13 @@ public class Util {
      * Represents the current database being used. Currently, supports "ram" and "mysql".
      * Can be overridden when running server.Server
      */
-    public static String DB_TYPE = "mysql";
+    public static String dbType = "mysql";
 
-    public static String INVALID_TOKEN = "invalid authToken";
+    public static final String INVALID_TOKEN = "invalid authToken";
 
-    public static String BAD_REQUEST = "invalid or incomplete request";
+    public static final String BAD_REQUEST = "invalid or incomplete request";
 
-    public static String SERVER_ERROR = "Internal server error";
+    public static final String SERVER_ERROR = "Internal server error";
 
     /**
      * Generates a random n-digit integer

@@ -61,21 +61,6 @@ public class MySQLUserDAO implements UserDAO {
     }
 
     @Override
-    public boolean emailExists(String email) throws DataAccessException {
-        String sql = "SELECT * FROM user WHERE email = ?;";
-        try (Connection conn = DatabaseManager.getConnection()) {
-            if (conn.isClosed()) return false;
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, email);
-            ResultSet rs = stmt.executeQuery();
-            return rs.next();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new DataAccessException(e.getMessage());
-        }
-    }
-
-    @Override
     public void update(UserBean bean) throws DataAccessException {
         insert(bean);
     }

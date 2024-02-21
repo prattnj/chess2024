@@ -19,7 +19,7 @@ public class Server {
         Spark.staticFiles.location("web");
 
         try {
-            if (Objects.equals(Util.DB_TYPE, "mysql")) DatabaseManager.createDatabase();
+            if (Objects.equals(Util.dbType, "mysql")) DatabaseManager.createDatabase();
         } catch (DataAccessException e) {
             e.printStackTrace();
         }
@@ -50,7 +50,7 @@ public class Server {
         validDbTypes.add("ram");
         validDbTypes.add("mysql");
 
-        String dbType = Util.DB_TYPE;
+        String dbType = Util.dbType;
         String usage = "Usage: java server.Server.main <port> [database]";
 
         if (args == null || args.length == 0) {
@@ -65,7 +65,7 @@ public class Server {
                 dbType = args[1];
                 if (!validDbTypes.contains(dbType)) throw new RuntimeException("Invalid database type");
             }
-            Util.DB_TYPE = dbType;
+            Util.dbType = dbType;
 
             // run server
             int chosenPort = new Server().run(port);

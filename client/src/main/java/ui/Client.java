@@ -18,7 +18,7 @@ public class Client {
     protected static final Scanner in = new Scanner(System.in);
     protected static final PrintStream out = System.out;
     protected final Gson gson = new Gson();
-    protected final String HELP = "Enter \"h\" or \"help\" for options";
+    protected static final String HELP = "Enter \"h\" or \"help\" for options";
     protected static final String EXIT_MESSAGE = "Happy trails!";
 
     public static void main(String[] args) {

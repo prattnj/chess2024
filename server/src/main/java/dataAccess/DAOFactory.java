@@ -11,17 +11,17 @@ import util.Util;
 public class DAOFactory {
 
     public static UserDAO getNewUserDAO() throws DataAccessException {
-        if (Util.DB_TYPE.equals("mysql")) return new MySQLUserDAO();
+        if (Util.dbType.equals("mysql")) return new MySQLUserDAO();
         else return RAMUserDAO.getInstance();
     }
 
     public static GameDAO getNewGameDAO() throws DataAccessException {
-        if (Util.DB_TYPE.equals("mysql")) return new MySQLGameDAO();
+        if (Util.dbType.equals("mysql")) return new MySQLGameDAO();
         else return RAMGameDAO.getInstance();
     }
 
     public static AuthTokenDAO getNewAuthTokenDAO() throws DataAccessException {
-        if (Util.DB_TYPE.equals("mysql")) return new MySQLAuthTokenDAO();
+        if (Util.dbType.equals("mysql")) return new MySQLAuthTokenDAO();
         else return RAMAuthTokenDAO.getInstance();
     }
 }

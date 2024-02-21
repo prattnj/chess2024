@@ -18,9 +18,9 @@ public class GameUI extends Client implements WSConnection.GameUI {
     private int gameID;
     private boolean isPlayer;
     private ChessGame.TeamColor color;
-    private final UserGameCommand.CommandType JOIN_OBSERVER = UserGameCommand.CommandType.JOIN_OBSERVER;
-    private final UserGameCommand.CommandType LEAVE = UserGameCommand.CommandType.LEAVE;
-    private final UserGameCommand.CommandType RESIGN = UserGameCommand.CommandType.RESIGN;
+    private static final UserGameCommand.CommandType JOIN_OBSERVER = UserGameCommand.CommandType.JOIN_OBSERVER;
+    private static final UserGameCommand.CommandType LEAVE = UserGameCommand.CommandType.LEAVE;
+    private static final UserGameCommand.CommandType RESIGN = UserGameCommand.CommandType.RESIGN;
 
     public GameUI() {
         connection.assignGameUI(this);
