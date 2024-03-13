@@ -5,28 +5,14 @@ package model.response;
  */
 public class BaseResponse {
 
-    private final boolean success;
     private final String message;
 
-    /**
-     * The success case constructor
-     */
     public BaseResponse() {
-        success = true;
-        message = null;
+        this.message = null;
     }
 
-    /**
-     * The fail case constructor
-     * @param message A String describing why this action failed
-     */
     public BaseResponse(String message) {
-        success = false;
         this.message = message;
-    }
-
-    public boolean isSuccess() {
-        return success;
     }
 
     public String getMessage() {

@@ -47,12 +47,12 @@ public class PreLoginUI extends Client {
 
         // send login request to server
         BaseResponse response = server.login(request);
-        if (response.isSuccess()) authToken = ((LoginResponse) response).getAuthToken();
+        if (response.getMessage() == null) authToken = ((LoginResponse) response).getAuthToken();
         else {
             out.println("Login failed:");
             printError(response.getMessage());
         }
-        return response.isSuccess();
+        return response.getMessage() == null;
     }
 
     private boolean register() {
@@ -66,19 +66,19 @@ public class PreLoginUI extends Client {
 
         // send register request to server
         BaseResponse response = server.register(request);
-        if (response.isSuccess()) authToken = ((LoginResponse) response).getAuthToken();
+        if (response.getMessage() == null) authToken = ((LoginResponse) response).getAuthToken();
         else {
             out.println("Register failed:");
             printError(response.getMessage());
         }
-        return response.isSuccess();
+        return response.getMessage() == null;
     }
 
     private void clear() {
 
         // send clear request to server
         BaseResponse response = server.clear();
-        if (response.isSuccess()) out.println("Database cleared.");
+        if (response.getMessage() == null) out.println("Database cleared.");
         else {
             out.println("Clear failed:");
             printError(response.getMessage());
@@ -89,17 +89,17 @@ public class PreLoginUI extends Client {
     private boolean auto() {
         LoginRequest request = new LoginRequest("test", "test");
         BaseResponse response = server.login(request);
-        if (response.isSuccess()) authToken = ((LoginResponse) response).getAuthToken();
+        if (response.getMessage() == null) authToken = ((LoginResponse) response).getAuthToken();
         else {
             RegisterRequest request1 = new RegisterRequest("test", "test", "test");
             BaseResponse response1 = server.register(request1);
-            if (response1.isSuccess()) authToken = ((LoginResponse) response1).getAuthToken();
+            if (response1.getMessage() == null) authToken = ((LoginResponse) response1).getAuthToken();
             else {
                 out.println("Login failed:");
                 printError(response.getMessage());
             }
-            return response1.isSuccess();
+            return response1.getMessage() == null;
         }
-        return response.isSuccess();
+        return response.getMessage() == null;
     }
 }

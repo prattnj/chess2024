@@ -56,11 +56,11 @@ public class PostLoginUI extends PreLoginUI {
     private boolean logout() {
         // send logout request to server
         BaseResponse response = server.logout(authToken);
-        if (response.isSuccess()) {
+        if (response.getMessage() == null) {
             authToken = null;
             out.println("Logged out successfully.");
         } else printError(response.getMessage());
-        return response.isSuccess();
+        return response.getMessage() == null;
     }
 
     private void create(String input) {
@@ -75,7 +75,7 @@ public class PostLoginUI extends PreLoginUI {
         // send create request to server and print gameID if successful
         BaseRequest request = new CreateGameRequest(parts[1]);
         BaseResponse response = server.create(request, authToken);
-        if (response.isSuccess()) {
+        if (response.getMessage() == null) {
             int gameID = ((CreateGameResponse) response).getGameID();
             out.println("Game successfully created with ID " + gameID);
             updateGames();
@@ -126,7 +126,7 @@ public class PostLoginUI extends PreLoginUI {
         // send join request to server
         JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID);
         BaseResponse response = server.join(request, authToken);
-        if (response.isSuccess()) {
+        if (response.getMessage() == null) {
             updateGames();
             out.println("Successfully joined game " + gameID);
             new GameUI().start(gameID, color, isJoin);
@@ -138,7 +138,7 @@ public class PostLoginUI extends PreLoginUI {
 
         // send list games request to server
         BaseResponse listResp = server.list(authToken);
-        if (listResp.isSuccess()) allGames = Arrays.asList(((ListGamesResponse) listResp).getGames());
+        if (listResp.getMessage() == null) allGames = Arrays.asList(((ListGamesResponse) listResp).getGames());
         else {
             printError("Server error, exiting. Try again later.");
             System.exit(0);
