@@ -24,8 +24,8 @@ public class ListGamesService extends Service {
         for (GameBean game : allGames) {
             String whiteUsername = null;
             String blackUsername = null;
-            if (game.getWhitePlayerID() != null) whiteUsername = udao.find(game.getWhitePlayerID()).getUsername();
-            if (game.getBlackPlayerID() != null) blackUsername = udao.find(game.getBlackPlayerID()).getUsername();
+            if (game.getWhiteUsername() != null) whiteUsername = udao.find(game.getWhiteUsername()).getUsername();
+            if (game.getBlackUsername() != null) blackUsername = udao.find(game.getBlackUsername()).getUsername();
             parsedGames.add(new ListGamesObj(game.getGameID(), whiteUsername, blackUsername, game.getGameName()));
         }
 

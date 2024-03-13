@@ -13,19 +13,11 @@ public interface AuthTokenDAO {
 
     /**
      * Finds an authToken from the database
-     * @param userID The userID of the authToken to find
+     * @param username The username of the authToken to find
      * @return The authToken in question, or null if it doesn't exist
      * @throws DataAccessException
      */
-    AuthTokenBean find(int userID) throws DataAccessException;
-
-    /**
-     * Finds an authToken from the database
-     * @param authToken The authToken string of the authToken to find
-     * @return The authToken in question, or null if it doesn't exist
-     * @throws DataAccessException
-     */
-    AuthTokenBean find(String authToken) throws DataAccessException;
+    AuthTokenBean find(String username) throws DataAccessException;
 
     /**
      * Updates a given authToken in the database

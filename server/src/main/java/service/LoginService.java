@@ -26,7 +26,7 @@ public class LoginService extends Service {
 
         // Login success
         String newToken = Util.getNewAuthToken();
-        adao.insert(new AuthTokenBean(newToken, user.getUserID()));
+        adao.insert(new AuthTokenBean(newToken, user.getUsername()));
 
         return new LoginResponse(newToken, req.getUsername());
     }

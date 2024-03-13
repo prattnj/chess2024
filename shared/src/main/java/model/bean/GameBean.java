@@ -6,23 +6,23 @@ package model.bean;
 public class GameBean {
 
     private final int gameID;
-    private Integer whitePlayerID;
-    private Integer blackPlayerID;
+    private String whiteUsername;
+    private String blackUsername;
     private final String gameName;
     private String game;
 
     /**
      * Basic constructor
      * @param gameID A unique ID for this game
-     * @param whitePlayerID The userID of the white player (can be null)
-     * @param blackPlayerID The userID of the black player (can be null)
+     * @param whiteUsername The username of the white player (can be null)
+     * @param blackUsername The username of the black player (can be null)
      * @param gameName A unique name for this game
      * @param game A string representation of this game
      */
-    public GameBean(int gameID, Integer whitePlayerID, Integer blackPlayerID, String gameName, String game) {
+    public GameBean(int gameID, String whiteUsername, String blackUsername, String gameName, String game) {
         this.gameID = gameID;
-        this.whitePlayerID = whitePlayerID;
-        this.blackPlayerID = blackPlayerID;
+        this.whiteUsername = whiteUsername;
+        this.blackUsername = blackUsername;
         this.gameName = gameName;
         this.game = game;
     }
@@ -31,12 +31,12 @@ public class GameBean {
         return gameID;
     }
 
-    public Integer getWhitePlayerID() {
-        return whitePlayerID;
+    public String getWhiteUsername() {
+        return whiteUsername;
     }
 
-    public Integer getBlackPlayerID() {
-        return blackPlayerID;
+    public String getBlackUsername() {
+        return blackUsername;
     }
 
     public String getGameName() {
@@ -47,12 +47,12 @@ public class GameBean {
         return game;
     }
 
-    public void setWhitePlayerID(int whitePlayerID) {
-        this.whitePlayerID = whitePlayerID;
+    public void setWhiteUsername(String whiteUsername) {
+        this.whiteUsername = whiteUsername;
     }
 
-    public void setBlackPlayerID(int blackPlayerID) {
-        this.blackPlayerID = blackPlayerID;
+    public void setBlackUsername(String blackUsername) {
+        this.blackUsername = blackUsername;
     }
 
     public void setGame(String game) {

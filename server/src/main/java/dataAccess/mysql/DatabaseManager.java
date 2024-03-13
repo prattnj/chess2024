@@ -52,18 +52,17 @@ public class DatabaseManager {
     private static void createTables() throws DataAccessException {
         String userTable = """
                 CREATE TABLE IF NOT EXISTS user (
-                    userID int NOT NULL,
                     username varchar(255) NOT NULL UNIQUE,
                     password varchar(255) NOT NULL,
                     email varchar(255) NOT NULL,
-                    PRIMARY KEY (userID)
+                    PRIMARY KEY (username)
                 );
                 """;
         String gameTable = """
                 CREATE TABLE IF NOT EXISTS game (
                     gameID int NOT NULL,
-                    whitePlayerID int,
-                    blackPlayerID int,
+                    whiteUsername varchar(255),
+                    blackUsername varchar(255),
                     gameName varchar(255),
                     game text NOT NULL,
                     PRIMARY KEY (gameID)
@@ -72,7 +71,7 @@ public class DatabaseManager {
         String authTable = """
                 CREATE TABLE IF NOT EXISTS auth (
                     authToken varchar(255) NOT NULL,
-                    userID int NOT NULL,
+                    username varchar(255) NOT NULL,
                     PRIMARY KEY (authToken)
                 );
                 """;

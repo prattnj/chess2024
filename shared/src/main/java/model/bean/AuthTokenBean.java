@@ -6,23 +6,23 @@ package model.bean;
 public class AuthTokenBean {
 
     private final String authToken;
-    private final int userID;
+    private final String username;
 
     /**
      * Basic constructor
      * @param authToken The token itself, as a String
-     * @param userID The userID of the user whose authToken this is
+     * @param username The username of the user whose authToken this is
      */
-    public AuthTokenBean(String authToken, int userID) {
+    public AuthTokenBean(String authToken, String username) {
         this.authToken = authToken;
-        this.userID = userID;
+        this.username = username;
     }
 
     public String getAuthToken() {
         return authToken;
     }
 
-    public int getUserID() {
-        return userID;
+    public String getUsername() {
+        return username;
     }
 }

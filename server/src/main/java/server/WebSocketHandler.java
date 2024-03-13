@@ -26,7 +26,7 @@ public class WebSocketHandler {
     private static final ServerMessage.ServerMessageType NOTIFICATION = ServerMessage.ServerMessageType.NOTIFICATION;
     private Session root;
     private int currentGameID;
-    private int currentUserID;
+    private String currentUsername;
     private GameBean currentBean;
 
     @OnWebSocketMessage
@@ -51,7 +51,7 @@ public class WebSocketHandler {
                 sendError("Invalid authToken.");
                 return;
             }
-            currentUserID = adao.find(command.getAuthString()).getUserID();
+            currentUsername = adao.find(command.getAuthString()).getUsername();
 
             // double check gameID
             currentBean = gdao.find(command.getGameID());
@@ -93,9 +93,8 @@ public class WebSocketHandler {
 
         // make sure this slot isn't already taken (for joins rather than observes)
         if (color != null) {
-            Integer takenID = color == ChessGame.TeamColor.WHITE ? currentBean.getWhitePlayerID() : currentBean.getBlackPlayerID();
-            if (takenID == null) takenID = 0;
-            if (takenID != currentUserID) {
+            String takenUsername = color == ChessGame.TeamColor.WHITE ? currentBean.getWhiteUsername() : currentBean.getBlackUsername();
+            if (!Objects.equals(takenUsername, currentUsername)) {
                 sendError("You must use the API to join this game.");
                 return;
             }
@@ -106,7 +105,7 @@ public class WebSocketHandler {
         send(root, gson.toJson(new ServerMessage(LOAD_GAME, game)));
 
         // send a NOTIFICATION to all other clients
-        String username = udao.find(currentUserID).getUsername();
+        String username = udao.find(currentUsername).getUsername();
         String observeMsg = username + " is now observing the game.";
         String joinedMsg = username + " joined the game as the " + color + " player.";
         broadcast(color == null ? observeMsg : joinedMsg);
@@ -201,11 +200,10 @@ public class WebSocketHandler {
 
         // if this was a player, update the game in the database
         String color = getColorString();
-        if (color != null) gdao.claimSpot(currentGameID, ChessGame.TeamColor.valueOf(color.toUpperCase()), 0);
+        if (color != null) gdao.claimSpot(currentGameID, ChessGame.TeamColor.valueOf(color.toUpperCase()), null);
 
         // send a NOTIFICATION to all remaining clients
-        String username = udao.find(currentUserID).getUsername();
-        broadcast(color == null ? username + " left the game." : username + " (the " + color + " player) left the game.");
+        broadcast(color == null ? currentUsername + " left the game." : currentUsername + " (the " + color + " player) left the game.");
     }
 
     // HELPER METHODS
@@ -226,18 +224,18 @@ public class WebSocketHandler {
     }
 
     private String getColorString() {
-        if (currentBean.getWhitePlayerID() != null && currentBean.getWhitePlayerID() == currentUserID) return "white";
-        else if (currentBean.getBlackPlayerID() != null && currentBean.getBlackPlayerID() == currentUserID) return "black";
+        if (currentBean.getWhiteUsername() != null && Objects.equals(currentBean.getWhiteUsername(), currentUsername)) return "white";
+        else if (currentBean.getBlackUsername() != null && Objects.equals(currentBean.getBlackUsername(), currentUsername)) return "black";
         else return null;
     }
 
     private ChessGame.TeamColor getColor() {
-        if (currentBean.getWhitePlayerID() != null && currentBean.getWhitePlayerID() == currentUserID) return ChessGame.TeamColor.WHITE;
-        else if (currentBean.getBlackPlayerID() != null && currentBean.getBlackPlayerID() == currentUserID) return ChessGame.TeamColor.BLACK;
+        if (currentBean.getWhiteUsername() != null && Objects.equals(currentBean.getWhiteUsername(), currentUsername)) return ChessGame.TeamColor.WHITE;
+        else if (currentBean.getBlackUsername() != null && Objects.equals(currentBean.getBlackUsername(), currentUsername)) return ChessGame.TeamColor.BLACK;
         else return null;
     }
 
     private boolean gameIsFull() {
-        return currentBean.getBlackPlayerID() != null && currentBean.getWhitePlayerID() != null;
+        return currentBean.getBlackUsername() != null && currentBean.getWhiteUsername() != null;
     }
 }

@@ -8,6 +8,8 @@ import model.response.BaseResponse;
 import server.BadRequestException;
 import server.ForbiddenException;
 
+import java.util.Objects;
+
 /**
  * Allows the user to join the requested game as a player or viewer
  */
@@ -18,7 +20,7 @@ public class JoinGameService extends Service {
 
         JoinGameRequest req = (JoinGameRequest) request;
 
-        int userID = adao.find(authToken).getUserID();
+        String username = adao.find(authToken).getUsername();
 
         GameBean game = gdao.find(req.getGameID());
 
@@ -35,15 +37,15 @@ public class JoinGameService extends Service {
 
         // Verify that this team color isn't taken
         Exception ex = new ForbiddenException("color is taken");
-        if (color == ChessGame.TeamColor.WHITE && game.getWhitePlayerID() != null && game.getWhitePlayerID() != userID) throw ex;
-        else if (color == ChessGame.TeamColor.BLACK && game.getBlackPlayerID() != null && game.getBlackPlayerID() != userID) throw ex;
+        if (color == ChessGame.TeamColor.WHITE && game.getWhiteUsername() != null && !Objects.equals(game.getWhiteUsername(), username)) throw ex;
+        else if (color == ChessGame.TeamColor.BLACK && game.getBlackUsername() != null && !Objects.equals(game.getBlackUsername(), username)) throw ex;
 
         // This is a valid request
         if (color != null) {
-            if (color == ChessGame.TeamColor.WHITE) game.setWhitePlayerID(userID);
-            else game.setBlackPlayerID(userID);
+            if (color == ChessGame.TeamColor.WHITE) game.setWhiteUsername(username);
+            else game.setBlackUsername(username);
         }
-        gdao.claimSpot(game.getGameID(), color, userID);
+        gdao.claimSpot(game.getGameID(), color, username);
 
         return new BaseResponse();
     }

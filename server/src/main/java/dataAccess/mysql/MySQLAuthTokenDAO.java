@@ -13,29 +13,13 @@ public class MySQLAuthTokenDAO implements AuthTokenDAO {
 
     @Override
     public void insert(AuthTokenBean bean) throws DataAccessException {
-        String sql = "INSERT INTO auth (authtoken, userID) VALUES (?, ?);";
+        String sql = "INSERT INTO auth (authtoken, username) VALUES (?, ?);";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, bean.getAuthToken());
-            stmt.setInt(2, bean.getUserID());
+            stmt.setString(2, bean.getUsername());
             stmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-            throw new DataAccessException(e.getMessage());
-        }
-    }
-
-    @Override
-    public AuthTokenBean find(int userID) throws DataAccessException {
-        String sql = "SELECT * FROM auth WHERE userID = ?;";
-        try (Connection conn = DatabaseManager.getConnection()) {
-            if (conn.isClosed()) return null;
-            PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, userID);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return new AuthTokenBean(rs.getString("authtoken"), rs.getInt("userID"));
-            else return null;
         } catch (SQLException e) {
             e.printStackTrace();
             throw new DataAccessException(e.getMessage());
@@ -50,7 +34,7 @@ public class MySQLAuthTokenDAO implements AuthTokenDAO {
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, authToken);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next()) return new AuthTokenBean(rs.getString("authtoken"), rs.getInt("userID"));
+            if (rs.next()) return new AuthTokenBean(rs.getString("authtoken"), rs.getString("username"));
             else return null;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -60,17 +44,17 @@ public class MySQLAuthTokenDAO implements AuthTokenDAO {
 
     @Override
     public void update(AuthTokenBean bean) throws DataAccessException {
-        String sql = "UPDATE auth SET authToken = ? WHERE userID = ?";
+        String sql = "UPDATE auth SET authToken = ? WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             // If this authToken does not exist, insert it
-            if (find(bean.getUserID()) == null) {
+            if (find(bean.getUsername()) == null) {
                 insert(bean);
                 return;
             }
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, bean.getAuthToken());
-            stmt.setInt(2, bean.getUserID());
+            stmt.setString(2, bean.getUsername());
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

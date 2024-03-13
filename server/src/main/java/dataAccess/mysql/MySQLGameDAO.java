@@ -14,15 +14,15 @@ public class MySQLGameDAO implements GameDAO {
 
     @Override
     public void insert(GameBean bean) throws DataAccessException {
-        String sql = "INSERT INTO game (gameID, whitePlayerID, blackPlayerID, gameName, game) VALUES (?, ?, ?, ?, ?);";
+        String sql = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?);";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setInt(1, bean.getGameID());
-            if (bean.getWhitePlayerID() == null) stmt.setNull(2, Types.INTEGER);
-            else stmt.setInt(2, bean.getWhitePlayerID());
-            if (bean.getBlackPlayerID() == null) stmt.setNull(3, Types.INTEGER);
-            else stmt.setInt(3, bean.getBlackPlayerID());
+            if (bean.getWhiteUsername() == null) stmt.setNull(2, Types.INTEGER);
+            else stmt.setString(2, bean.getWhiteUsername());
+            if (bean.getBlackUsername() == null) stmt.setNull(3, Types.INTEGER);
+            else stmt.setString(3, bean.getBlackUsername());
             stmt.setString(4, bean.getGameName());
             stmt.setString(5, bean.getGame());
             stmt.executeUpdate();
@@ -41,10 +41,8 @@ public class MySQLGameDAO implements GameDAO {
             stmt.setInt(1, gameID);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                Integer white = rs.getInt(2);
-                Integer black = rs.getInt(3);
-                if (white == 0) white = null;
-                if (black == 0) black = null;
+                String white = rs.getString(2);
+                String black = rs.getString(3);
                 return new GameBean(rs.getInt(1), white, black, rs.getString(4), rs.getString(5));
             }
             else return null;
@@ -63,10 +61,8 @@ public class MySQLGameDAO implements GameDAO {
             ResultSet rs = stmt.executeQuery();
             Set<GameBean> allGames = new HashSet<>();
             while (rs.next()) {
-                Integer white = rs.getInt(2);
-                Integer black = rs.getInt(3);
-                if (white == 0) white = null;
-                if (black == 0) black = null;
+                String white = rs.getString(2);
+                String black = rs.getString(3);
                 allGames.add(new GameBean(rs.getInt(1), white, black, rs.getString(4), rs.getString(5)));
             }
             return allGames;
@@ -124,15 +120,15 @@ public class MySQLGameDAO implements GameDAO {
     }
 
     @Override
-    public void claimSpot(int gameID, ChessGame.TeamColor color, int playerID) throws DataAccessException {
+    public void claimSpot(int gameID, ChessGame.TeamColor color, String username) throws DataAccessException {
         if (color == null) return;
         String sql = color == ChessGame.TeamColor.WHITE ?
-                "UPDATE game SET whitePlayerID = ? WHERE gameID = ?" :
-                "UPDATE game SET blackPlayerID = ? WHERE gameID = ?";
+                "UPDATE game SET whiteUsername = ? WHERE gameID = ?" :
+                "UPDATE game SET blackUsername = ? WHERE gameID = ?";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setInt(1, playerID);
+            stmt.setString(1, username);
             stmt.setInt(2, gameID);
             stmt.executeUpdate();
         } catch (SQLException e) {

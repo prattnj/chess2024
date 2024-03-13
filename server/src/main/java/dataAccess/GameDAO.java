@@ -53,8 +53,8 @@ public interface GameDAO {
      * Updates the players in a game
      * @param gameID The gameID of the game to update
      * @param color The color whose player will be updated
-     * @param playerID The player claiming the spot
+     * @param username The player claiming the spot
      * @throws DataAccessException
      */
-    void claimSpot(int gameID, ChessGame.TeamColor color, int playerID) throws DataAccessException;
+    void claimSpot(int gameID, ChessGame.TeamColor color, String username) throws DataAccessException;
 }

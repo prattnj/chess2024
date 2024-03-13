@@ -48,11 +48,11 @@ public class RAMGameDAO implements GameDAO {
     }
 
     @Override
-    public void claimSpot(int gameID, ChessGame.TeamColor color, int playerID) {
+    public void claimSpot(int gameID, ChessGame.TeamColor color, String username) {
         GameBean bean = table.get(gameID);
         if (color != null) {
-            if (color == ChessGame.TeamColor.WHITE) bean.setWhitePlayerID(playerID);
-            else bean.setBlackPlayerID(playerID);
+            if (color == ChessGame.TeamColor.WHITE) bean.setWhiteUsername(username);
+            else bean.setBlackUsername(username);
         }
     }
 }

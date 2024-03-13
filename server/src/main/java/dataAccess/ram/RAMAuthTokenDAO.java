@@ -21,12 +21,6 @@ public class RAMAuthTokenDAO implements AuthTokenDAO {
     }
 
     @Override
-    public AuthTokenBean find(int userID) {
-        for (AuthTokenBean bean : table.values()) if (bean.getUserID() == userID) return bean;
-        return null;
-    }
-
-    @Override
     public AuthTokenBean find(String authToken) {
         return table.get(authToken);
     }

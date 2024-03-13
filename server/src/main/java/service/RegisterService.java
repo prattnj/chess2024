@@ -23,7 +23,7 @@ public class RegisterService extends Service {
         if (user != null) throw new ForbiddenException("username is taken");
 
         // Everything is valid, we can create the user
-        user = new UserBean(Util.getRandomID(6), req.getUsername(), req.getPassword(), req.getEmail());
+        user = new UserBean(req.getUsername(), req.getPassword(), req.getEmail());
         udao.insert(user);
 
         // Log the new user in

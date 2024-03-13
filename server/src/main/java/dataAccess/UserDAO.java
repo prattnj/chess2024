@@ -13,14 +13,6 @@ public interface UserDAO {
 
     /**
      * Finds a user from the database
-     * @param userID The userID of the user to find
-     * @return The user in question, or null if it doesn't exist
-     * @throws DataAccessException
-     */
-    UserBean find(int userID) throws DataAccessException;
-
-    /**
-     * Finds a user from the database
      * @param username The username of the user to find
      * @return The user in question, or null if it doesn't exist
      * @throws DataAccessException
@@ -36,10 +28,10 @@ public interface UserDAO {
 
     /**
      * Removes a user from the database
-     * @param userID The userID of the user to remove
+     * @param username The username of the user to remove
      * @throws DataAccessException
      */
-    void delete(int userID) throws DataAccessException;
+    void delete(String username) throws DataAccessException;
 
     /**
      * Removes all users from the database
