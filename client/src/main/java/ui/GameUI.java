@@ -1,9 +1,6 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import net.WSConnection;
 import webSocketMessages.userCommands.JoinPlayerUC;
 import webSocketMessages.userCommands.MakeMoveUC;
@@ -222,7 +219,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
         out.print("\n");
         boolean isWhite = color != ChessGame.TeamColor.BLACK;
         printAlphaLabel(isWhite);
-        printBoard(game.getBoard().toString(), isWhite, endPositions);
+        printBoard(game.getBoard(), isWhite, endPositions);
         printAlphaLabel(isWhite);
         out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
     }
@@ -235,7 +232,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
         out.println("   " + EscapeSequences.RESET_BG_COLOR);
     }
 
-    private void printBoard(String board, boolean isWhite, Collection<ChessPosition> endPositions) {
+    private void printBoard(ChessBoard board, boolean isWhite, Collection<ChessPosition> endPositions) {
         boolean isLight = true;
         for (int i = 0; i < 8; i++) {
             int rowIndex = isWhite ? 8 - i : i + 1;
@@ -243,7 +240,6 @@ public class GameUI extends Client implements WSConnection.GameUI {
             for (int j = 0; j < 8; j++) {
 
                 // Determine indices
-                int index = isWhite ? ((7 - i) * 8) + j : (i * 8) + (7 - j);
                 int columnIndex = isWhite ? j + 1 : 8 - j;
                 ChessPosition position = new ChessPosition(rowIndex, columnIndex);
 
@@ -254,7 +250,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
                 else out.print(EscapeSequences.SET_BG_COLOR_DARK_SQUARE);
 
                 // Print the piece
-                out.print(renderPiece(board.charAt(index)));
+                out.print(renderPiece(board.getPiece(position)));
                 isLight = !isLight;
             }
             out.println(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + " " + rowIndex + " " + EscapeSequences.RESET_BG_COLOR);
@@ -262,22 +258,27 @@ public class GameUI extends Client implements WSConnection.GameUI {
         }
     }
 
-    private String renderPiece(char c) {
-        return switch (c) {
-            case 'K' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_KING + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'Q' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_QUEEN + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'R' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_ROOK + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'N' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_KNIGHT + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'B' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_BISHOP + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'P' -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_PAWN + EscapeSequences.SET_TEXT_COLOR_BLACK;
-            case 'k' -> EscapeSequences.BLACK_KING;
-            case 'q' -> EscapeSequences.BLACK_QUEEN;
-            case 'r' -> EscapeSequences.BLACK_ROOK;
-            case 'n' -> EscapeSequences.BLACK_KNIGHT;
-            case 'b' -> EscapeSequences.BLACK_BISHOP;
-            case 'p' -> EscapeSequences.BLACK_PAWN;
-            default -> EscapeSequences.EMPTY;
-        };
+    private String renderPiece(ChessPiece piece) {
+        if (piece == null) return EscapeSequences.EMPTY;
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            return switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_KING + EscapeSequences.SET_TEXT_COLOR_BLACK;
+                case QUEEN -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_QUEEN + EscapeSequences.SET_TEXT_COLOR_BLACK;
+                case ROOK -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_ROOK + EscapeSequences.SET_TEXT_COLOR_BLACK;
+                case KNIGHT -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_KNIGHT + EscapeSequences.SET_TEXT_COLOR_BLACK;
+                case BISHOP -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_BISHOP + EscapeSequences.SET_TEXT_COLOR_BLACK;
+                case PAWN -> EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.BLACK_PAWN + EscapeSequences.SET_TEXT_COLOR_BLACK;
+            };
+        } else {
+            return switch (piece.getPieceType()) {
+                case KING -> EscapeSequences.BLACK_KING;
+                case QUEEN -> EscapeSequences.BLACK_QUEEN;
+                case ROOK -> EscapeSequences.BLACK_ROOK;
+                case KNIGHT -> EscapeSequences.BLACK_KNIGHT;
+                case BISHOP -> EscapeSequences.BLACK_BISHOP;
+                case PAWN -> EscapeSequences.BLACK_PAWN;
+            };
+        }
     }
 
     private boolean validatePosition(String posStr) {
