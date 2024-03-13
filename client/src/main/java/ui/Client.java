@@ -11,7 +11,7 @@ import java.util.Scanner;
 public class Client {
 
     protected static String host = "localhost";
-    protected static String port = "8080";
+    protected static String port = "3002";
     protected static String authToken;
     protected static ServerFacade server;
     protected static WSConnection connection = null;

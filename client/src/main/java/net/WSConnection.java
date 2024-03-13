@@ -37,7 +37,6 @@ public class WSConnection extends Endpoint {
                 }
             });
         } catch (DeploymentException | IOException e) {
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
 
