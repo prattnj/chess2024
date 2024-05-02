@@ -4,6 +4,7 @@ import dataaccess.DataAccessException;
 import dataaccess.DatabaseManager;
 import dataaccess.UserDAO;
 import model.bean.UserBean;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,7 +20,7 @@ public class MySQLUserDAO implements UserDAO {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
             stmt.setString(1, bean.getUsername());
-            stmt.setString(2, bean.getPassword());
+            stmt.setString(2, BCrypt.hashpw(bean.getPassword(), BCrypt.gensalt()));
             stmt.setString(3, bean.getEmail());
             stmt.executeUpdate();
         } catch (SQLException e) {

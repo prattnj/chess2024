@@ -6,6 +6,7 @@ import model.request.BaseRequest;
 import model.request.LoginRequest;
 import model.response.BaseResponse;
 import model.response.LoginResponse;
+import org.mindrot.jbcrypt.BCrypt;
 import server.UnauthorizedException;
 import util.Util;
 
@@ -22,7 +23,7 @@ public class LoginService extends Service {
 
         UserBean user = udao.find(req.getUsername());
         if (user == null) throw new UnauthorizedException("invalid username");
-        if (!user.getPassword().equals(req.getPassword())) throw new UnauthorizedException("invalid password");
+        if (!BCrypt.checkpw(req.getPassword(), user.getPassword())) throw new UnauthorizedException("invalid password");
 
         // Login success
         String newToken = Util.getNewAuthToken();
