@@ -1,7 +1,8 @@
-package dataAccess.mysql;
+package dataaccess.mysql;
 
-import dataAccess.AuthTokenDAO;
-import dataAccess.DataAccessException;
+import dataaccess.AuthTokenDAO;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import model.bean.AuthTokenBean;
 
 import java.sql.Connection;

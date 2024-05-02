@@ -2,7 +2,7 @@ package server;
 
 import chess.*;
 import com.google.gson.Gson;
-import dataAccess.*;
+import dataaccess.*;
 import model.bean.GameBean;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;

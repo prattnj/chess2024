@@ -1,6 +1,6 @@
-package dataAccess.ram;
+package dataaccess.ram;
 
-import dataAccess.AuthTokenDAO;
+import dataaccess.AuthTokenDAO;
 import model.bean.AuthTokenBean;
 
 import java.util.HashMap;

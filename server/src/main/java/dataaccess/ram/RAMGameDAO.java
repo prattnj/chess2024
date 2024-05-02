@@ -1,7 +1,7 @@
-package dataAccess.ram;
+package dataaccess.ram;
 
 import chess.ChessGame;
-import dataAccess.GameDAO;
+import dataaccess.GameDAO;
 import model.bean.GameBean;
 
 import java.util.Collection;

@@ -1,6 +1,6 @@
-package dataAccess.ram;
+package dataaccess.ram;
 
-import dataAccess.UserDAO;
+import dataaccess.UserDAO;
 import model.bean.UserBean;
 
 import java.util.HashMap;

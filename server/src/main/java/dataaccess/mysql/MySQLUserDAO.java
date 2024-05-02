@@ -1,7 +1,8 @@
-package dataAccess.mysql;
+package dataaccess.mysql;
 
-import dataAccess.DataAccessException;
-import dataAccess.UserDAO;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
+import dataaccess.UserDAO;
 import model.bean.UserBean;
 
 import java.sql.Connection;

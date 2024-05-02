@@ -1,7 +1,7 @@
 package server;
 
-import dataAccess.DataAccessException;
-import dataAccess.mysql.DatabaseManager;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
 import model.request.*;
 import service.*;
 import spark.*;

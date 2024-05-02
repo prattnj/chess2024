@@ -1,11 +1,11 @@
-package dataAccess;
+package dataaccess;
 
-import dataAccess.mysql.MySQLAuthTokenDAO;
-import dataAccess.mysql.MySQLGameDAO;
-import dataAccess.mysql.MySQLUserDAO;
-import dataAccess.ram.RAMAuthTokenDAO;
-import dataAccess.ram.RAMGameDAO;
-import dataAccess.ram.RAMUserDAO;
+import dataaccess.mysql.MySQLAuthTokenDAO;
+import dataaccess.mysql.MySQLGameDAO;
+import dataaccess.mysql.MySQLUserDAO;
+import dataaccess.ram.RAMAuthTokenDAO;
+import dataaccess.ram.RAMGameDAO;
+import dataaccess.ram.RAMUserDAO;
 import util.Util;
 
 public class DAOFactory {

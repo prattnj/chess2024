@@ -1,8 +1,9 @@
-package dataAccess.mysql;
+package dataaccess.mysql;
 
 import chess.ChessGame;
-import dataAccess.DataAccessException;
-import dataAccess.GameDAO;
+import dataaccess.DataAccessException;
+import dataaccess.DatabaseManager;
+import dataaccess.GameDAO;
 import model.bean.GameBean;
 
 import java.sql.*;

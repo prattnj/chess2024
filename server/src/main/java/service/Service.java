@@ -1,7 +1,7 @@
 package service;
 
-import dataAccess.*;
-import dataAccess.DataAccessException;
+import dataaccess.*;
+import dataaccess.DataAccessException;
 import model.request.BaseRequest;
 import model.response.BaseResponse;
 import server.ServerErrorException;
