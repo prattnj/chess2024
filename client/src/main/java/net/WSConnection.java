@@ -2,7 +2,7 @@ package net;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
-import webSocketMessages.serverMessages.ServerMessage;
+import websocket.messages.ServerMessage;
 
 import javax.websocket.*;
 import java.io.IOException;

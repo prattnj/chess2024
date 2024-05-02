@@ -6,10 +6,9 @@ import dataaccess.*;
 import model.bean.GameBean;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
-import webSocketMessages.serverMessages.ServerMessage;
-import webSocketMessages.userCommands.JoinPlayerUC;
-import webSocketMessages.userCommands.MakeMoveUC;
-import webSocketMessages.userCommands.UserGameCommand;
+import websocket.commands.MakeMoveUC;
+import websocket.commands.UserGameCommand;
+import websocket.messages.ServerMessage;
 
 import java.io.IOException;
 import java.util.*;
@@ -68,7 +67,7 @@ public class WebSocketHandler {
             // note: if this is a join of any kind, it has already been
             // sent to the server via /games/join from the PostLoginUI client.
             switch (command.getCommandType()) {
-                case JOIN_OBSERVER, JOIN_PLAYER -> join(gson.fromJson(message, JoinPlayerUC.class));
+                case CONNECT -> connect(gson.fromJson(message, UserGameCommand.class));
                 case MAKE_MOVE -> makeMove(gson.fromJson(message, MakeMoveUC.class));
                 case RESIGN -> resign();
                 case LEAVE -> leave();
@@ -87,18 +86,18 @@ public class WebSocketHandler {
     }
 
     // COMMAND LOGIC
-    private void join(JoinPlayerUC command) throws DataAccessException {
+    private void connect(UserGameCommand command) throws DataAccessException {
 
-        ChessGame.TeamColor color = command.getPlayerColor();
+        //ChessGame.TeamColor color = command.getPlayerColor();
 
         // make sure this slot isn't already taken (for joins rather than observes)
-        if (color != null) {
+        /*if (color != null) {
             String takenUsername = color == ChessGame.TeamColor.WHITE ? currentBean.getWhiteUsername() : currentBean.getBlackUsername();
             if (!Objects.equals(takenUsername, currentUsername)) {
                 sendError("You must use the API to join this game.");
                 return;
             }
-        }
+        }*/
 
         // send a LOAD_GAME back to the root client
         String game = currentBean.getGame();
@@ -106,6 +105,10 @@ public class WebSocketHandler {
 
         // send a NOTIFICATION to all other clients
         String username = udao.find(currentUsername).getUsername();
+        String message;
+        ChessGame.TeamColor color = currentBean.getWhiteUsername().equals(username) ? ChessGame.TeamColor.WHITE : (
+                currentBean.getBlackUsername().equals(username) ? ChessGame.TeamColor.BLACK : null
+                );
         String observeMsg = username + " is now observing the game.";
         String joinedMsg = username + " joined the game as the " + color + " player.";
         broadcast(color == null ? observeMsg : joinedMsg);

@@ -2,9 +2,8 @@ package ui;
 
 import chess.*;
 import net.WSConnection;
-import webSocketMessages.userCommands.JoinPlayerUC;
-import webSocketMessages.userCommands.MakeMoveUC;
-import webSocketMessages.userCommands.UserGameCommand;
+import websocket.commands.MakeMoveUC;
+import websocket.commands.UserGameCommand;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -15,9 +14,6 @@ public class GameUI extends Client implements WSConnection.GameUI {
     private int gameID;
     private boolean isPlayer;
     private ChessGame.TeamColor color;
-    private static final UserGameCommand.CommandType JOIN_OBSERVER = UserGameCommand.CommandType.JOIN_OBSERVER;
-    private static final UserGameCommand.CommandType LEAVE = UserGameCommand.CommandType.LEAVE;
-    private static final UserGameCommand.CommandType RESIGN = UserGameCommand.CommandType.RESIGN;
 
     public GameUI() {
         connection.assignGameUI(this);
@@ -31,7 +27,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
         out.println("\nEntered in-game mode.");
         out.println("(" + HELP + ")");
 
-        connection.send(gson.toJson(isPlayer ? new JoinPlayerUC(authToken, gameID, color) : new UserGameCommand(JOIN_OBSERVER, authToken, gameID)));
+        connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID)));
 
         while(true) {
             basePrompt();
@@ -66,7 +62,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
 
     private boolean leave() {
         out.println("Leaving game.");
-        connection.send(gson.toJson(new UserGameCommand(LEAVE, authToken, gameID)));
+        connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID)));
         return true;
     }
 
@@ -185,7 +181,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
             if (!resign.equalsIgnoreCase("n")) printError("Invalid input.");
             return;
         }
-        connection.send(gson.toJson(new UserGameCommand(RESIGN, authToken, gameID)));
+        connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID)));
     }
 
     @Override

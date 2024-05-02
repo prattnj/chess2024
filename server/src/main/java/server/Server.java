@@ -24,7 +24,7 @@ public class Server {
             e.printStackTrace();
         }
 
-        Spark.webSocket("/connect", new WebSocketHandler());
+        Spark.webSocket("/ws", new WebSocketHandler());
 
         // Register your endpoints and handle exceptions here.
         Spark.delete("/db", new Handler(new ClearService(), null, false));
