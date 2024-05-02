@@ -88,17 +88,6 @@ public class WebSocketHandler {
     // COMMAND LOGIC
     private void connect(UserGameCommand command) throws DataAccessException {
 
-        //ChessGame.TeamColor color = command.getPlayerColor();
-
-        // make sure this slot isn't already taken (for joins rather than observes)
-        /*if (color != null) {
-            String takenUsername = color == ChessGame.TeamColor.WHITE ? currentBean.getWhiteUsername() : currentBean.getBlackUsername();
-            if (!Objects.equals(takenUsername, currentUsername)) {
-                sendError("You must use the API to join this game.");
-                return;
-            }
-        }*/
-
         // send a LOAD_GAME back to the root client
         String game = currentBean.getGame();
         send(root, gson.toJson(new ServerMessage(LOAD_GAME, game)));
