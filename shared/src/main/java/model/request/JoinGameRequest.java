@@ -1,7 +1,7 @@
 package model.request;
 
 /**
- * A request used to join a game, either as a player or a viewer
+ * A request used to join a game
  */
 public class JoinGameRequest extends BaseRequest {
 
@@ -28,6 +28,6 @@ public class JoinGameRequest extends BaseRequest {
 
     @Override
     public boolean isComplete() {
-        return true;
+        return playerColor != null;
     }
 }
