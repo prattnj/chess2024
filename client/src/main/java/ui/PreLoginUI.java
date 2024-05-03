@@ -9,14 +9,14 @@ public class PreLoginUI extends Client {
 
     public void start() {
 
-        out.println(EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.RESET_BG_COLOR);
-        out.println("Welcome to Chess 1.0!");
-        out.println("(" + HELP + ")");
+        OUT.println(EscapeSequences.SET_TEXT_COLOR_WHITE + EscapeSequences.RESET_BG_COLOR);
+        OUT.println("Welcome to Chess 1.0!");
+        OUT.println("(" + HELP + ")");
 
         while (true) {
 
-            out.print(EscapeSequences.SET_TEXT_COLOR_YELLOW + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
-            String input = in.nextLine().toLowerCase();
+            OUT.print(EscapeSequences.SET_TEXT_COLOR_YELLOW + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
+            String input = IN.nextLine().toLowerCase();
             switch (input) {
                 case "h", "help" -> help();
                 case "l", "login" -> {if (login()) new PostLoginUI().start();}
@@ -24,17 +24,17 @@ public class PreLoginUI extends Client {
                 case "q", "quit" -> {return;}
                 case "cleardb" -> clear();
                 case "auto" -> {if (auto()) new PostLoginUI().start();}
-                default -> out.println("Unknown command. " + HELP);
+                default -> OUT.println("Unknown command. " + HELP);
             }
         }
     }
 
     private void help() {
-        out.println("Options:");
-        out.println("\"h\", \"help\": See options");
-        out.println("\"l\", \"login\": Login as an existing user");
-        out.println("\"r\", \"register\": Register a new user");
-        out.println("\"q\", \"quit\": Exit the program");
+        OUT.println("Options:");
+        OUT.println("\"h\", \"help\": See options");
+        OUT.println("\"l\", \"login\": Login as an existing user");
+        OUT.println("\"r\", \"register\": Register a new user");
+        OUT.println("\"q\", \"quit\": Exit the program");
     }
 
     private boolean login() {
@@ -42,14 +42,14 @@ public class PreLoginUI extends Client {
         // build login request
         String username = prompt("Enter your username: ");
         String password = prompt("Enter your password: ");
-        out.print("\n");
+        OUT.print("\n");
         LoginRequest request = new LoginRequest(username, password);
 
         // send login request to server
         BaseResponse response = server.login(request);
         if (response.getMessage() == null) authToken = ((LoginResponse) response).getAuthToken();
         else {
-            out.println("Login failed:");
+            OUT.println("Login failed:");
             printError(response.getMessage());
         }
         return response.getMessage() == null;
@@ -61,14 +61,14 @@ public class PreLoginUI extends Client {
         String username = prompt("Enter your username: ");
         String password = prompt("Enter your password: ");
         String email = prompt("Enter your email: ");
-        out.print("\n");
+        OUT.print("\n");
         RegisterRequest request = new RegisterRequest(username, password, email);
 
         // send register request to server
         BaseResponse response = server.register(request);
         if (response.getMessage() == null) authToken = ((LoginResponse) response).getAuthToken();
         else {
-            out.println("Register failed:");
+            OUT.println("Register failed:");
             printError(response.getMessage());
         }
         return response.getMessage() == null;
@@ -78,9 +78,9 @@ public class PreLoginUI extends Client {
 
         // send clear request to server
         BaseResponse response = server.clear();
-        if (response.getMessage() == null) out.println("Database cleared.");
+        if (response.getMessage() == null) OUT.println("Database cleared.");
         else {
-            out.println("Clear failed:");
+            OUT.println("Clear failed:");
             printError(response.getMessage());
         }
     }
@@ -95,7 +95,7 @@ public class PreLoginUI extends Client {
             BaseResponse response1 = server.register(request1);
             if (response1.getMessage() == null) authToken = ((LoginResponse) response1).getAuthToken();
             else {
-                out.println("Login failed:");
+                OUT.println("Login failed:");
                 printError(response.getMessage());
             }
             return response1.getMessage() == null;

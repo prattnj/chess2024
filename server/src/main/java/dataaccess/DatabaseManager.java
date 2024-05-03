@@ -9,7 +9,7 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
-    private static final String[] schema = new String[]{"""
+    private static final String[] SCHEMA = new String[]{"""
 CREATE TABLE IF NOT EXISTS user (
     username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
@@ -66,7 +66,7 @@ CREATE TABLE IF NOT EXISTS auth (
                 preparedStatement.executeUpdate();
             }
             conn.setCatalog(DATABASE_NAME);
-            for (String scheme : schema) {
+            for (String scheme : SCHEMA) {
                 conn.prepareStatement(scheme).executeUpdate();
             }
         } catch (SQLException e) {

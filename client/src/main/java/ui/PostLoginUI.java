@@ -19,15 +19,15 @@ public class PostLoginUI extends PreLoginUI {
 
     public void start() {
 
-        out.println("Logged in successfully.");
-        out.println("(" + HELP + ")");
+        OUT.println("Logged in successfully.");
+        OUT.println("(" + HELP + ")");
 
         updateGames();
 
         while(true) {
 
-            out.print(EscapeSequences.SET_TEXT_COLOR_GREEN + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
-            String input = in.nextLine().toLowerCase();
+            OUT.print(EscapeSequences.SET_TEXT_COLOR_GREEN + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
+            String input = IN.nextLine().toLowerCase();
             String[] parts = input.split(" ");
             switch (parts[0]) {
                 case "h", "help" -> help();
@@ -37,20 +37,20 @@ public class PostLoginUI extends PreLoginUI {
                 case "o", "observe" -> observe(input);
                 case "lg", "logout" -> {if (logout()) return;}
                 case "q", "quit" -> quit();
-                default -> out.println("Unknown command. " + HELP);
+                default -> OUT.println("Unknown command. " + HELP);
             }
         }
     }
 
     private void help() {
-        out.println("Options:");
-        out.println("\"h\", \"help\": See options");
-        out.println("\"c <name>\", \"create <name>\": Create a new game");
-        out.println("\"ls\", \"list\": List all existing games");
-        out.println("\"j <gameID>\", \"join <gameID>\": Join an existing game specified by the given game ID");
-        out.println("\"o <gameID>\", \"observe <gameID>\": Observe a game specified by the given game ID");
-        out.println("\"lg\", \"logout\": Logout");
-        out.println("\"q\", \"quit\": Exit the program");
+        OUT.println("Options:");
+        OUT.println("\"h\", \"help\": See options");
+        OUT.println("\"c <name>\", \"create <name>\": Create a new game");
+        OUT.println("\"ls\", \"list\": List all existing games");
+        OUT.println("\"j <gameID>\", \"join <gameID>\": Join an existing game specified by the given game ID");
+        OUT.println("\"o <gameID>\", \"observe <gameID>\": Observe a game specified by the given game ID");
+        OUT.println("\"lg\", \"logout\": Logout");
+        OUT.println("\"q\", \"quit\": Exit the program");
     }
 
     private boolean logout() {
@@ -58,7 +58,7 @@ public class PostLoginUI extends PreLoginUI {
         BaseResponse response = server.logout(authToken);
         if (response.getMessage() == null) {
             authToken = null;
-            out.println("Logged out successfully.");
+            OUT.println("Logged out successfully.");
         } else printError(response.getMessage());
         return response.getMessage() == null;
     }
@@ -68,7 +68,7 @@ public class PostLoginUI extends PreLoginUI {
         // determine game name
         String[] parts = input.split(" ");
         if (parts.length < 2) {
-            out.println("Must specify a game name.");
+            OUT.println("Must specify a game name.");
             return;
         }
 
@@ -77,14 +77,14 @@ public class PostLoginUI extends PreLoginUI {
         BaseResponse response = server.create(request, authToken);
         if (response.getMessage() == null) {
             int gameID = ((CreateGameResponse) response).getGameID();
-            out.println("Game successfully created with ID " + gameID);
+            OUT.println("Game successfully created with ID " + gameID);
             updateGames();
         } else printError(response.getMessage());
     }
 
     private void list() {
         updateGames();
-        if (allGames.isEmpty()) out.println("There are currently no games.");
+        if (allGames.isEmpty()) OUT.println("There are currently no games.");
         else for (ListGamesObj game : allGames) printGame(game);
     }
 
@@ -93,7 +93,7 @@ public class PostLoginUI extends PreLoginUI {
         // determine gameID
         String[] parts = input.split(" ");
         if (parts.length < 2) {
-            out.println("Must specify a game ID. Enter 'ls' to see games.");
+            OUT.println("Must specify a game ID. Enter 'ls' to see games.");
             return;
         }
         int gameID = Integer.parseInt(parts[1]);
@@ -101,7 +101,7 @@ public class PostLoginUI extends PreLoginUI {
         // finish building request
         ChessGame.TeamColor teamColor = Util.getColorForString(prompt("Would you like to play as (b)lack or (w)hite? "));
         if (teamColor == null) {
-            out.println("Invalid color.");
+            OUT.println("Invalid color.");
             return;
         }
 
@@ -113,7 +113,7 @@ public class PostLoginUI extends PreLoginUI {
         // determine gameID
         String[] parts = input.split(" ");
         if (parts.length < 2) {
-            out.println("Must specify a game ID. Enter 'ls' to see games.");
+            OUT.println("Must specify a game ID. Enter 'ls' to see games.");
             return;
         }
         int gameID = Integer.parseInt(parts[1]);
@@ -128,7 +128,7 @@ public class PostLoginUI extends PreLoginUI {
         BaseResponse response = server.join(request, authToken);
         if (response.getMessage() == null) {
             updateGames();
-            out.println("Successfully joined game " + gameID);
+            OUT.println("Successfully joined game " + gameID);
             new GameUI().start(gameID, color, isJoin);
         } else printError(response.getMessage());
     }
@@ -146,10 +146,10 @@ public class PostLoginUI extends PreLoginUI {
     }
 
     private void printGame(ListGamesObj game) {
-        out.println("ID: " + game.getGameID());
-        out.println("Name: " + game.getGameName());
-        out.println("White: " + (game.getWhiteUsername() == null ? "" : game.getWhiteUsername()));
-        out.println("Black: " + (game.getBlackUsername() == null ? "" : game.getBlackUsername()));
-        out.print("\n");
+        OUT.println("ID: " + game.getGameID());
+        OUT.println("Name: " + game.getGameName());
+        OUT.println("White: " + (game.getWhiteUsername() == null ? "" : game.getWhiteUsername()));
+        OUT.println("Black: " + (game.getBlackUsername() == null ? "" : game.getBlackUsername()));
+        OUT.print("\n");
     }
 }

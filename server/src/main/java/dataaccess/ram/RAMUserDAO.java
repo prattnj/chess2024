@@ -8,11 +8,11 @@ import java.util.Map;
 
 public class RAMUserDAO implements UserDAO {
 
-    private static final UserDAO instance = new RAMUserDAO();
+    private static final UserDAO INSTANCE = new RAMUserDAO();
     private final Map<String, UserBean> table = new HashMap<>();
 
     public static UserDAO getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override

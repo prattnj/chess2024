@@ -10,11 +10,11 @@ import java.util.Map;
 
 public class RAMGameDAO implements GameDAO {
 
-    private static final GameDAO instance = new RAMGameDAO();
+    private static final GameDAO INSTANCE = new RAMGameDAO();
     private final Map<Integer, GameBean> table = new HashMap<>();
 
     public static GameDAO getInstance() {
-        return instance;
+        return INSTANCE;
     }
 
     @Override

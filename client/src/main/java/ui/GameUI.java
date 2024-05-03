@@ -24,14 +24,14 @@ public class GameUI extends Client implements WSConnection.GameUI {
         this.gameID = gameID;
         this.isPlayer = isPlayer;
 
-        out.println("\nEntered in-game mode.");
-        out.println("(" + HELP + ")");
+        OUT.println("\nEntered in-game mode.");
+        OUT.println("(" + HELP + ")");
 
         connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID)));
 
         while(true) {
             basePrompt();
-            String input = in.nextLine().toLowerCase();
+            String input = IN.nextLine().toLowerCase();
             String[] parts = input.split(" ");
             switch (parts[0]) {
                 case "h", "help" -> help();
@@ -41,19 +41,19 @@ public class GameUI extends Client implements WSConnection.GameUI {
                 case "s", "show" -> show(input);
                 case "r", "resign" -> resign();
                 case "test" -> connection.send("testing");
-                default -> out.println("Unknown command. " + HELP);
+                default -> OUT.println("Unknown command. " + HELP);
             }
         }
     }
 
     private void help() {
-        out.println("Options:");
-        out.println("\"h\", \"help\": See options");
-        out.println("\"d\", \"draw\": Redraw the board");
-        out.println("\"l\", \"leave\": Leave current game");
-        out.println("\"m\", \"move\": Make a move");
-        out.println("\"s\", \"show\": Show available moves for a piece");
-        out.println("\"r\", \"resign\": Resign (game over)");
+        OUT.println("Options:");
+        OUT.println("\"h\", \"help\": See options");
+        OUT.println("\"d\", \"draw\": Redraw the board");
+        OUT.println("\"l\", \"leave\": Leave current game");
+        OUT.println("\"m\", \"move\": Make a move");
+        OUT.println("\"s\", \"show\": Show available moves for a piece");
+        OUT.println("\"r\", \"resign\": Resign (game over)");
     }
 
     private void redraw() {
@@ -61,7 +61,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
     }
 
     private boolean leave() {
-        out.println("Leaving game.");
+        OUT.println("Leaving game.");
         connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID)));
         return true;
     }
@@ -175,8 +175,8 @@ public class GameUI extends Client implements WSConnection.GameUI {
         }
 
         // resignation is valid
-        out.print("Are you sure you want to resign? (y/n): ");
-        String resign = String.valueOf(in.nextLine().charAt(0));
+        OUT.print("Are you sure you want to resign? (y/n): ");
+        String resign = String.valueOf(IN.nextLine().charAt(0));
         if (!resign.equalsIgnoreCase("y")) {
             if (!resign.equalsIgnoreCase("n")) printError("Invalid input.");
             return;
@@ -192,16 +192,16 @@ public class GameUI extends Client implements WSConnection.GameUI {
         ChessGame.TeamColor color = game.getTeamTurn();
         ChessGame.TeamColor otherColor = color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
         if (game.isOver()) {
-            if (game.isInCheckmate(color)) out.println("Checkmate! The " + otherColor + " player wins.");
-            else if (game.isInStalemate(color)) out.println("Stalemate! The game is over.");
-        } else if (game.isInCheck(color)) out.println("The " + color + " player is in check.");
+            if (game.isInCheckmate(color)) OUT.println("Checkmate! The " + otherColor + " player wins.");
+            else if (game.isInStalemate(color)) OUT.println("Stalemate! The game is over.");
+        } else if (game.isInCheck(color)) OUT.println("The " + color + " player is in check.");
         basePrompt();
     }
 
     @Override
     public void notify(String message, boolean isError) {
         if (isError) printError(message);
-        else out.println(message);
+        else OUT.println(message);
         basePrompt();
     }
 
@@ -212,27 +212,27 @@ public class GameUI extends Client implements WSConnection.GameUI {
 
     private void drawBoard(Collection<ChessPosition> endPositions) {
         if (game == null) return;
-        out.print("\n");
+        OUT.print("\n");
         boolean isWhite = color != ChessGame.TeamColor.BLACK;
         printAlphaLabel(isWhite);
         printBoard(game.getBoard(), isWhite, endPositions);
         printAlphaLabel(isWhite);
-        out.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
+        OUT.print(EscapeSequences.SET_TEXT_COLOR_WHITE);
     }
 
     private void printAlphaLabel(boolean isWhite) {
         // Prints 'a' - 'h' or vice versa depending on the color
-        out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + "   ");
-        if (isWhite) for (int i = 0; i < 8; i++) out.print(" " + (char)('a' + i) + "\u2003");
-        else for (int i = 7; i >= 0; i--) out.print(" " + (char)('a' + i) + "\u2003");
-        out.println("   " + EscapeSequences.RESET_BG_COLOR);
+        OUT.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + EscapeSequences.SET_TEXT_COLOR_BLACK + "   ");
+        if (isWhite) for (int i = 0; i < 8; i++) OUT.print(" " + (char)('a' + i) + "\u2003");
+        else for (int i = 7; i >= 0; i--) OUT.print(" " + (char)('a' + i) + "\u2003");
+        OUT.println("   " + EscapeSequences.RESET_BG_COLOR);
     }
 
     private void printBoard(ChessBoard board, boolean isWhite, Collection<ChessPosition> endPositions) {
         boolean isLight = true;
         for (int i = 0; i < 8; i++) {
             int rowIndex = isWhite ? 8 - i : i + 1;
-            out.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + " " + rowIndex + " ");
+            OUT.print(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + " " + rowIndex + " ");
             for (int j = 0; j < 8; j++) {
 
                 // Determine indices
@@ -240,16 +240,16 @@ public class GameUI extends Client implements WSConnection.GameUI {
                 ChessPosition position = new ChessPosition(rowIndex, columnIndex);
 
                 // Set the BG color
-                if (isLight && endPositions.contains(position)) out.print(EscapeSequences.SET_BG_COLOR_GREEN);
-                else if (isLight) out.print(EscapeSequences.SET_BG_COLOR_LIGHT_SQUARE);
-                else if (endPositions.contains(position)) out.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
-                else out.print(EscapeSequences.SET_BG_COLOR_DARK_SQUARE);
+                if (isLight && endPositions.contains(position)) OUT.print(EscapeSequences.SET_BG_COLOR_GREEN);
+                else if (isLight) OUT.print(EscapeSequences.SET_BG_COLOR_LIGHT_SQUARE);
+                else if (endPositions.contains(position)) OUT.print(EscapeSequences.SET_BG_COLOR_DARK_GREEN);
+                else OUT.print(EscapeSequences.SET_BG_COLOR_DARK_SQUARE);
 
                 // Print the piece
-                out.print(renderPiece(board.getPiece(position)));
+                OUT.print(renderPiece(board.getPiece(position)));
                 isLight = !isLight;
             }
-            out.println(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + " " + rowIndex + " " + EscapeSequences.RESET_BG_COLOR);
+            OUT.println(EscapeSequences.SET_BG_COLOR_LIGHT_GREY + " " + rowIndex + " " + EscapeSequences.RESET_BG_COLOR);
             isLight = !isLight;
         }
     }
@@ -288,6 +288,6 @@ public class GameUI extends Client implements WSConnection.GameUI {
     }
 
     private void basePrompt() {
-        out.print(EscapeSequences.SET_TEXT_COLOR_BLUE + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
+        OUT.print(EscapeSequences.SET_TEXT_COLOR_BLUE + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
     }
 }
