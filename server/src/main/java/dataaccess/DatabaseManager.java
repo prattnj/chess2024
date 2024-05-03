@@ -9,6 +9,30 @@ public class DatabaseManager {
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
 
+    private static final String[] schema = new String[]{"""
+CREATE TABLE IF NOT EXISTS user (
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    PRIMARY KEY (username)
+)
+""", """
+CREATE TABLE IF NOT EXISTS game (
+    gameID INT NOT NULL,
+    whiteUsername VARCHAR(255),
+    blackUsername VARCHAR(255),
+    gameName VARCHAR(255),
+    game TEXT NOT NULL,
+    PRIMARY KEY (gameID)
+)
+""", """
+CREATE TABLE IF NOT EXISTS auth (
+    authToken VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
+    PRIMARY KEY (authToken)
+)
+"""};
+
     /*
      * Load the database information for the db.properties file.
      */
@@ -40,6 +64,10 @@ public class DatabaseManager {
             var conn = DriverManager.getConnection(CONNECTION_URL, USER, PASSWORD);
             try (var preparedStatement = conn.prepareStatement(statement)) {
                 preparedStatement.executeUpdate();
+            }
+            conn.setCatalog(DATABASE_NAME);
+            for (String scheme : schema) {
+                conn.prepareStatement(scheme).executeUpdate();
             }
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
