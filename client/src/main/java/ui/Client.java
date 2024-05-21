@@ -32,7 +32,7 @@ public class Client {
 
         // Connect to server
         try {
-            connection = new WSConnection(new URI("ws://" + host + ":" + port + "/connect"));
+            connection = new WSConnection(new URI("ws://" + host + ":" + port + "/ws"));
         } catch (Exception e) {
             printError("Unable to connect to server. Try again later.");
             quit();
