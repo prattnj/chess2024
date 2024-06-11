@@ -123,14 +123,30 @@ public class PostLoginUI extends PreLoginUI {
 
     private void joinOrObserve(ChessGame.TeamColor color, int gameID, boolean isJoin) {
 
-        // send join request to server
-        JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID);
-        BaseResponse response = server.join(request, authToken);
-        if (response.getMessage() == null) {
+        if (isJoin) {
+            // send join request to server
+            JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID);
+            BaseResponse response = server.join(request, authToken);
+            if (response.getMessage() == null) {
+                updateGames();
+                OUT.println("Successfully joined game " + gameID);
+                new GameUI().start(gameID, color, true);
+            } else printError(response.getMessage());
+        } else {
             updateGames();
-            OUT.println("Successfully joined game " + gameID);
-            new GameUI().start(gameID, color, isJoin);
-        } else printError(response.getMessage());
+            boolean validID = false;
+            for (ListGamesObj lgo : allGames)
+                if (lgo.getGameID() == gameID) {
+                    validID = true;
+                    break;
+                }
+            if (!validID) OUT.println("Invalid gameID. Try again.");
+            else {
+                OUT.println("Successfully joined game " + gameID);
+                new GameUI().start(gameID, color, false);
+            }
+        }
+
     }
 
     // HELPER METHODS
