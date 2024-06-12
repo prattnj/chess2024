@@ -11,6 +11,8 @@ public class RAMUserDAO implements UserDAO {
     private static final UserDAO INSTANCE = new RAMUserDAO();
     private final Map<String, UserBean> table = new HashMap<>();
 
+    private RAMUserDAO() {}
+
     public static UserDAO getInstance() {
         return INSTANCE;
     }

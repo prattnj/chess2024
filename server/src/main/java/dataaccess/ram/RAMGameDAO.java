@@ -13,6 +13,8 @@ public class RAMGameDAO implements GameDAO {
     private static final GameDAO INSTANCE = new RAMGameDAO();
     private final Map<Integer, GameBean> table = new HashMap<>();
 
+    private RAMGameDAO() {}
+
     public static GameDAO getInstance() {
         return INSTANCE;
     }
