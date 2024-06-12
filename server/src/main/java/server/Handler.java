@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import model.request.BaseRequest;
 import model.response.BaseResponse;
 import service.Service;
@@ -40,14 +41,19 @@ public class Handler implements Route {
 
         // Handle authorization
         String authToken = request.headers("Authorization");
-        if (authRequired && (authToken == null || authToken.equals(""))) {
+        if (authRequired && (authToken == null || authToken.isEmpty())) {
             response.status(401);
             return gson.toJson(new BaseResponse("Error: " + Util.INVALID_TOKEN));
         } else if (!authRequired) authToken = null;
 
         // Parse request and first-level validation
         BaseRequest serviceRequest = null;
-        if (!Objects.equals(request.body(), "")) serviceRequest = gson.fromJson(request.body(), requestType);
+        try {
+            if (!Objects.equals(request.body(), "")) serviceRequest = gson.fromJson(request.body(), requestType);
+        } catch (JsonSyntaxException e) {
+            response.status(500);
+            return gson.toJson(new BaseResponse("Error: bad json"));
+        }
         if (serviceRequest != null) {
             if (!serviceRequest.isComplete()) {
                 response.status(400);
@@ -60,10 +66,12 @@ public class Handler implements Route {
         try {
             resp = service.execute(serviceRequest, authToken);
         } catch (Exception e) {
-            if (e instanceof BadRequestException) response.status(400);
-            else if (e instanceof UnauthorizedException) response.status(401);
-            else if (e instanceof ForbiddenException) response.status(403);
-            else response.status(500);
+            switch (e) {
+                case BadRequestException badRequestException -> response.status(400);
+                case UnauthorizedException unauthorizedException -> response.status(401);
+                case ForbiddenException forbiddenException -> response.status(403);
+                default -> response.status(500);
+            }
             resp = new BaseResponse(e.getMessage());
         }
 
