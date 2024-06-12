@@ -67,7 +67,7 @@ public class WebSocketHandler {
             // note: if this is a join of any kind, it has already been
             // sent to the server via /games/join from the PostLoginUI client.
             switch (command.getCommandType()) {
-                case CONNECT -> connect(gson.fromJson(message, UserGameCommand.class));
+                case CONNECT -> connect(command);
                 case MAKE_MOVE -> makeMove(gson.fromJson(message, MakeMoveUC.class));
                 case RESIGN -> resign();
                 case LEAVE -> leave();
