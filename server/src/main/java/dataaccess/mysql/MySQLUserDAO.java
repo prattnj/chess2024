@@ -16,6 +16,8 @@ public class MySQLUserDAO implements UserDAO {
     @Override
     public void insert(UserBean bean) throws DataAccessException {
         String sql = "INSERT INTO user (username, password, email) VALUES (?, ?, ?);";
+        if (bean.getUsername().equals(DatabaseManager.AI_USERNAME))
+            sql = "INSERT IGNORE INTO user (username, password, email) VALUES (?, ?, ?);";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
