@@ -1,6 +1,7 @@
 package service;
 
 import chess.ChessGame;
+import dataaccess.DatabaseManager;
 import model.bean.GameBean;
 import model.request.BaseRequest;
 import model.request.JoinGameRequest;
@@ -40,12 +41,25 @@ public class JoinGameService extends Service {
         if (color == ChessGame.TeamColor.WHITE && game.getWhiteUsername() != null && !Objects.equals(game.getWhiteUsername(), username)) throw ex;
         else if (color == ChessGame.TeamColor.BLACK && game.getBlackUsername() != null && !Objects.equals(game.getBlackUsername(), username)) throw ex;
 
-        // This is a valid request
-        if (color != null) {
-            if (color == ChessGame.TeamColor.WHITE) game.setWhiteUsername(username);
-            else game.setBlackUsername(username);
+        // Verify the AI's color isn't taken if applicable
+        if (req.isAI()) {
+            ex = new ForbiddenException("there's already a player in this game");
+            if (color == ChessGame.TeamColor.WHITE && game.getBlackUsername() != null) throw ex;
+            else if (color == ChessGame.TeamColor.BLACK && game.getWhiteUsername() != null) throw ex;
         }
+
+        // This is a valid request
+        if (color == ChessGame.TeamColor.WHITE) game.setWhiteUsername(username);
+        else game.setBlackUsername(username);
         gdao.claimSpot(game.getGameID(), color, username);
+
+        // Add the AI as the other player
+        if (req.isAI()) {
+            if (color == ChessGame.TeamColor.WHITE) game.setBlackUsername(DatabaseManager.AI_USERNAME);
+            else game.setWhiteUsername(DatabaseManager.AI_USERNAME);
+            color = color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            gdao.claimSpot(game.getGameID(), color, DatabaseManager.AI_USERNAME);
+        }
 
         return new BaseResponse();
     }
