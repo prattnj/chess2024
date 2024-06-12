@@ -66,10 +66,11 @@ public class MySQLUserDAO implements UserDAO {
 
     @Override
     public void clear() throws DataAccessException {
-        String sql = "DELETE FROM user;";
+        String sql = "DELETE FROM user WHERE username != ?;";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
+            stmt.setString(1, DatabaseManager.AI_USERNAME);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

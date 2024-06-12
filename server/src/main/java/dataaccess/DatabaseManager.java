@@ -1,5 +1,8 @@
 package dataaccess;
 
+import dataaccess.mysql.MySQLUserDAO;
+import model.bean.UserBean;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -8,6 +11,8 @@ public class DatabaseManager {
     private static final String USER;
     private static final String PASSWORD;
     private static final String CONNECTION_URL;
+
+    public static final String AI_USERNAME = "ai";
 
     private static final String[] SCHEMA = new String[]{"""
 CREATE TABLE IF NOT EXISTS user (
@@ -69,6 +74,7 @@ CREATE TABLE IF NOT EXISTS auth (
             for (String scheme : SCHEMA) {
                 conn.prepareStatement(scheme).executeUpdate();
             }
+            new MySQLUserDAO().insert(new UserBean(AI_USERNAME, "aiPassw0rd", "ai"));
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }
