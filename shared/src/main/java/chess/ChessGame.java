@@ -213,6 +213,16 @@ public class ChessGame {
         this.isOver = isOver;
     }
 
+    public ChessGame clone() {
+        ChessGame clone = new ChessGame();
+        clone.board = new ChessBoard(board);
+        clone.isOver = isOver;
+        clone.teamTurn = teamTurn;
+        clone.moveHistory.addAll(moveHistory);
+        clone.enPassantMoves.addAll(enPassantMoves);
+        return clone;
+    }
+
     private void toggleTeamTurn() {
         teamTurn = Util.oppositeColor(teamTurn);
     }
