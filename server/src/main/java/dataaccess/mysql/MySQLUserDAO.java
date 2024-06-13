@@ -5,6 +5,7 @@ import dataaccess.DatabaseManager;
 import dataaccess.UserDAO;
 import model.bean.UserBean;
 import org.mindrot.jbcrypt.BCrypt;
+import util.Util;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -16,7 +17,7 @@ public class MySQLUserDAO implements UserDAO {
     @Override
     public void insert(UserBean bean) throws DataAccessException {
         String sql = "INSERT INTO user (username, password, email) VALUES (?, ?, ?);";
-        if (bean.getUsername().equals(DatabaseManager.AI_USERNAME))
+        if (bean.getUsername().equals(Util.AI_USERNAME))
             sql = "INSERT IGNORE INTO user (username, password, email) VALUES (?, ?, ?);";
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
@@ -72,7 +73,7 @@ public class MySQLUserDAO implements UserDAO {
         try (Connection conn = DatabaseManager.getConnection()) {
             if (conn.isClosed()) return;
             PreparedStatement stmt = conn.prepareStatement(sql);
-            stmt.setString(1, DatabaseManager.AI_USERNAME);
+            stmt.setString(1, Util.AI_USERNAME);
             stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();

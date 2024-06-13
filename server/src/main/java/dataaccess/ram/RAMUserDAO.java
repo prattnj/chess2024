@@ -1,8 +1,8 @@
 package dataaccess.ram;
 
-import dataaccess.DatabaseManager;
 import dataaccess.UserDAO;
 import model.bean.UserBean;
+import util.Util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,7 +13,7 @@ public class RAMUserDAO implements UserDAO {
     private final Map<String, UserBean> table = new HashMap<>();
 
     private RAMUserDAO() {
-        table.put(DatabaseManager.AI_USERNAME, new UserBean(DatabaseManager.AI_USERNAME, "aiPassw0rd", "ai"));
+        table.put(Util.AI_USERNAME, new UserBean(Util.AI_USERNAME, "aiPassw0rd", "ai"));
     }
 
     public static UserDAO getInstance() {
@@ -43,6 +43,6 @@ public class RAMUserDAO implements UserDAO {
     @Override
     public void clear() {
         table.clear();
-        table.put(DatabaseManager.AI_USERNAME, new UserBean(DatabaseManager.AI_USERNAME, "aiPassw0rd", "ai"));
+        table.put(Util.AI_USERNAME, new UserBean(Util.AI_USERNAME, "aiPassw0rd", "ai"));
     }
 }

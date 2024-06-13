@@ -276,6 +276,6 @@ public class WebSocketHandler {
     }
 
     private boolean gameIsAI() {
-        return currentBean.getWhiteUsername().equals(DatabaseManager.AI_USERNAME) || currentBean.getBlackUsername().equals(DatabaseManager.AI_USERNAME);
+        return currentBean.getWhiteUsername().equals(Util.AI_USERNAME) || currentBean.getBlackUsername().equals(Util.AI_USERNAME);
     }
 }

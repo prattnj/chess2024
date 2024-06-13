@@ -1,7 +1,6 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.DatabaseManager;
 import model.bean.GameBean;
 import model.request.BaseRequest;
 import model.request.JoinGameRequest;
@@ -56,10 +55,10 @@ public class JoinGameService extends Service {
 
         // Add the AI as the other player
         if (req.isAI()) {
-            if (color == ChessGame.TeamColor.WHITE) game.setBlackUsername(DatabaseManager.AI_USERNAME);
-            else game.setWhiteUsername(DatabaseManager.AI_USERNAME);
+            if (color == ChessGame.TeamColor.WHITE) game.setBlackUsername(Util.AI_USERNAME);
+            else game.setWhiteUsername(Util.AI_USERNAME);
             color = Util.oppositeColor(color);
-            gdao.claimSpot(game.getGameID(), color, DatabaseManager.AI_USERNAME);
+            gdao.claimSpot(game.getGameID(), color, Util.AI_USERNAME);
         }
 
         return new BaseResponse();

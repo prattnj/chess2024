@@ -22,6 +22,8 @@ public class Util {
 
     public static final String SERVER_ERROR = "Internal server error";
 
+    public static final String AI_USERNAME = "ai";
+
     /**
      * Generates a random n-digit integer
      * @param digits The number of digits in this random ID
