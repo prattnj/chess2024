@@ -3,9 +3,12 @@ package server;
 import chess.*;
 import com.google.gson.Gson;
 import dataaccess.*;
+import model.AILevel;
 import model.bean.GameBean;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
+import service.ai.ChessAI;
+import websocket.commands.ConnectAI;
 import websocket.commands.MakeMoveUC;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -18,6 +21,7 @@ public class WebSocketHandler {
 
     private final Gson gson = new Gson();
     private final Map<Integer, Set<Session>> cache = new HashMap<>();
+    private final Map<Integer, AILevel> aiLevels = new HashMap<>();
     private UserDAO udao;
     private GameDAO gdao;
     private static final ServerMessage.ServerMessageType LOAD_GAME = ServerMessage.ServerMessageType.LOAD_GAME;
@@ -65,7 +69,7 @@ public class WebSocketHandler {
             cache.get(currentGameID).add(session);
 
             // note: if this is a join of any kind, it has already been
-            // sent to the server via /games/join from the PostLoginUI client.
+            // sent to the server via HTTP join from the PostLoginUI client.
             switch (command.getCommandType()) {
                 case CONNECT -> connect(command);
                 case MAKE_MOVE -> makeMove(gson.fromJson(message, MakeMoveUC.class));
@@ -101,6 +105,15 @@ public class WebSocketHandler {
         String observeMsg = username + " is now observing the game.";
         String joinedMsg = username + " joined the game as the " + color + " player.";
         broadcast(color == null ? observeMsg : joinedMsg);
+
+        // add AI game to map if applicable
+        if (gameIsAI()) {
+            AILevel level = ((ConnectAI) command).getLevel();
+            if (!aiLevels.containsKey(currentGameID)) aiLevels.put(currentGameID, level);
+
+            // make AI move if applicable
+            if (color == ChessGame.TeamColor.BLACK) aiMove(gson.fromJson(game, ChessGame.class));
+        }
     }
 
     private void makeMove(MakeMoveUC command) throws DataAccessException {
@@ -132,23 +145,11 @@ public class WebSocketHandler {
             return;
         }
 
-        // validate/make the move
-        try {
-            game.makeMove(move);
-        } catch (InvalidMoveException e) {
-            send(root, gson.toJson(new ServerMessage(ERROR, e.getMessage())));
-            return;
-        }
+        // makes the move, updates the game
+        moveLogic(game, move);
 
-        // update the game in memory and in the database
-        currentBean.setGame(gson.toJson(game));
-        gdao.update(currentBean);
-
-        // send a LOAD_GAME back to all clients in the game
-        for (Session s : cache.get(currentGameID)) send(s, gson.toJson(new ServerMessage(LOAD_GAME, currentBean.getGame())));
-
-        // send a NOTIFICATION to everyone except the root client
-        broadcast("The " + getColorString() + " player made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString());
+        // gets AI move and calls moveLogic()
+        if (gameIsAI()) aiMove(game);
     }
 
     private void resign() throws DataAccessException {
@@ -198,6 +199,41 @@ public class WebSocketHandler {
         broadcast(color == null ? currentUsername + " left the game." : currentUsername + " (the " + color + " player) left the game.");
     }
 
+    private void aiMove(ChessGame game) throws DataAccessException {
+        // get ideal move given game and team
+        ChessGame.TeamColor aiColor = getColor() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        ChessMove move = ChessAI.getMove(game, aiColor, aiLevels.get(currentGameID));
+        moveLogic(game, move);
+    }
+
+    private void moveLogic(ChessGame game, ChessMove move) throws DataAccessException {
+        // validate/make the move
+        try {
+            game.makeMove(move);
+        } catch (InvalidMoveException e) {
+            if (!gameIsAI()) send(root, gson.toJson(new ServerMessage(ERROR, e.getMessage())));
+            else {
+                String msg = gson.toJson(new ServerMessage(NOTIFICATION, "The AI tried making an invalid move. " + currentUsername + " wins!"));
+                send(root, msg);
+                broadcast(msg);
+                game.setIsOver(true);
+                updateGame(game);
+            }
+            return;
+        }
+
+        // update the game in memory and in the database
+        updateGame(game);
+
+        // send a LOAD_GAME back to all clients in the game
+        for (Session s : cache.get(currentGameID)) send(s, gson.toJson(new ServerMessage(LOAD_GAME, currentBean.getGame())));
+
+        // send a NOTIFICATION to everyone except the root client (include root client if it's an AI move)
+        String msg = "The " + getColorString() + " player (" + currentUsername + ") made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
+        broadcast(msg);
+        if (gameIsAI()) send(root, msg);
+    }
+
     // HELPER METHODS
     private void send(Session session, String message) {
         try {
@@ -215,6 +251,11 @@ public class WebSocketHandler {
         send(root, gson.toJson(new ServerMessage(ERROR, message)));
     }
 
+    private void updateGame(ChessGame game) throws DataAccessException {
+        currentBean.setGame(gson.toJson(game));
+        gdao.update(currentBean);
+    }
+
     private String getColorString() {
         if (currentBean.getWhiteUsername() != null && Objects.equals(currentBean.getWhiteUsername(), currentUsername)) return "white";
         else if (currentBean.getBlackUsername() != null && Objects.equals(currentBean.getBlackUsername(), currentUsername)) return "black";
@@ -229,5 +270,9 @@ public class WebSocketHandler {
 
     private boolean gameIsFull() {
         return currentBean.getBlackUsername() != null && currentBean.getWhiteUsername() != null;
+    }
+
+    private boolean gameIsAI() {
+        return currentBean.getWhiteUsername().equals(DatabaseManager.AI_USERNAME) || currentBean.getBlackUsername().equals(DatabaseManager.AI_USERNAME);
     }
 }
