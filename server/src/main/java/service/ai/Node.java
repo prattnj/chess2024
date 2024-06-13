@@ -18,6 +18,10 @@ public class Node {
         return 0.0;
     }
 
+    public ChessGame getGame() {
+        return game;
+    }
+
     public List<Node> getChildren() {
         return children;
     }
