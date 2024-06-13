@@ -1,5 +1,7 @@
 package chess;
 
+import util.Util;
+
 import java.util.*;
 
 /**
@@ -146,7 +148,7 @@ public class ChessGame {
         moveHistory.add(move);
 
         // determine whether this move ended the game
-        TeamColor opponent = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        TeamColor opponent = Util.oppositeColor(teamTurn);
         if (isInCheckmate(opponent) || isInStalemate(opponent)) isOver = true;
 
         // update whose turn it is
@@ -212,7 +214,7 @@ public class ChessGame {
     }
 
     private void toggleTeamTurn() {
-        teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        teamTurn = Util.oppositeColor(teamTurn);
     }
 
     private ChessPosition findKing(ChessBoard board, ChessGame.TeamColor color) {

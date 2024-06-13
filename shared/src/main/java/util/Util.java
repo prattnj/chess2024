@@ -60,4 +60,9 @@ public class Util {
         else if (color == ChessGame.TeamColor.BLACK) return "black";
         else return null;
     }
+
+    public static ChessGame.TeamColor oppositeColor(ChessGame.TeamColor color) {
+        if (color == null) return null;
+        return color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+    }
 }

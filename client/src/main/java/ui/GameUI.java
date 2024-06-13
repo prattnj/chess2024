@@ -2,6 +2,7 @@ package ui;
 
 import chess.*;
 import net.WSConnection;
+import util.Util;
 import websocket.commands.MakeMoveUC;
 import websocket.commands.UserGameCommand;
 
@@ -190,7 +191,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
         this.game = game;
         drawBoard();
         ChessGame.TeamColor color = game.getTeamTurn();
-        ChessGame.TeamColor otherColor = color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        ChessGame.TeamColor otherColor = Util.oppositeColor(color);
         if (game.isOver()) {
             if (game.isInCheckmate(color)) OUT.println("Checkmate! The " + otherColor + " player wins.");
             else if (game.isInStalemate(color)) OUT.println("Stalemate! The game is over.");

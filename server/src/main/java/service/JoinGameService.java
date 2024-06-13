@@ -8,6 +8,7 @@ import model.request.JoinGameRequest;
 import model.response.BaseResponse;
 import server.BadRequestException;
 import server.ForbiddenException;
+import util.Util;
 
 import java.util.Objects;
 
@@ -57,7 +58,7 @@ public class JoinGameService extends Service {
         if (req.isAI()) {
             if (color == ChessGame.TeamColor.WHITE) game.setBlackUsername(DatabaseManager.AI_USERNAME);
             else game.setWhiteUsername(DatabaseManager.AI_USERNAME);
-            color = color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+            color = Util.oppositeColor(color);
             gdao.claimSpot(game.getGameID(), color, DatabaseManager.AI_USERNAME);
         }
 
