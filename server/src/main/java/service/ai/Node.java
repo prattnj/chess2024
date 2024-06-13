@@ -1,14 +1,15 @@
 package service.ai;
 
 import chess.ChessGame;
+import chess.ChessMove;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Node {
 
     private final ChessGame game;
-    private final List<Node> children = new ArrayList<>();
+    private final Map<ChessMove, Node> children = new HashMap<>();
 
     public Node(ChessGame game) {
         this.game = game;
@@ -22,7 +23,11 @@ public class Node {
         return game;
     }
 
-    public List<Node> getChildren() {
+    public Map<ChessMove, Node> getChildren() {
         return children;
+    }
+
+    public void addChild(ChessMove m, Node child) {
+        children.put(m, child);
     }
 }
