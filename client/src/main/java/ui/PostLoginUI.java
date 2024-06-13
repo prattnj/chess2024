@@ -125,7 +125,7 @@ public class PostLoginUI extends PreLoginUI {
 
         if (isJoin) {
             // send join request to server
-            JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID);
+            JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID, false);
             BaseResponse response = server.join(request, authToken);
             if (response.getMessage() == null) {
                 updateGames();
