@@ -201,8 +201,9 @@ public class WebSocketHandler {
 
     private void aiMove(ChessGame game) throws DataAccessException {
         // get ideal move given game and team
+        ChessAI ai = new ChessAI();
         ChessGame.TeamColor aiColor = getColor() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-        ChessMove move = ChessAI.getMove(game, aiColor, aiLevels.get(currentGameID));
+        ChessMove move = ai.getMove(game, aiColor, aiLevels.get(currentGameID));
         moveLogic(game, move);
     }
 
