@@ -76,6 +76,25 @@ public class ChessGame {
     }
 
     /**
+     * Gets a collection of every move a player can make (uses the other validMoves method)
+     *
+     * @param color the player in question
+     * @return A collection of valid moves
+     */
+    public Collection<ChessMove> validMoves(TeamColor color) {
+        Collection<ChessMove> moves = new HashSet<>();
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition pos = new ChessPosition(i, j);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null || piece.getTeamColor() != color) continue;
+                moves.addAll(validMoves(pos));
+            }
+        }
+        return moves;
+    }
+
+    /**
      * Makes a move in a chess game
      *
      * @param move chess move to preform
@@ -151,7 +170,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return noValidMoves(teamColor) && isInCheck(teamColor);
+        return validMoves(teamColor).isEmpty() && isInCheck(teamColor);
     }
 
     /**
@@ -162,7 +181,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return noValidMoves(teamColor) && !isInCheck(teamColor);
+        return validMoves(teamColor).isEmpty() && !isInCheck(teamColor);
     }
 
     /**
@@ -368,17 +387,5 @@ public class ChessGame {
             }
         }
         return null;
-    }
-
-    // iterate through board to see if this player has any valid moves
-    private boolean noValidMoves(TeamColor teamColor) {
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition pos = new ChessPosition(i, j);
-                ChessPiece resident = board.getPiece(pos);
-                if (resident != null && resident.getTeamColor() == teamColor) if (!validMoves(pos).isEmpty()) return false;
-            }
-        }
-        return true;
     }
 }
