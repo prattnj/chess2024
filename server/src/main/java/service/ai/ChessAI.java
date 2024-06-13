@@ -3,15 +3,35 @@ package service.ai;
 import chess.ChessGame;
 import chess.ChessMove;
 import model.AILevel;
+import util.Util;
 
 public class ChessAI {
 
-    Node root;
-    int maxDepth = 3;
+    private Node root;
+    private int totalNodes;
+    private final static int MAX_DEPTH = 3;
+    private final AILevel level;
+    private ChessGame.TeamColor maxPlayer;
 
-    public ChessMove getMove(ChessGame game, ChessGame.TeamColor turn, AILevel level) {
-        double bestValue = minimax(root, 1, true, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-        return null;
+    public ChessAI(AILevel level) {
+        this.level = level;
+    }
+
+    public ChessMove getMove(ChessGame game, ChessGame.TeamColor turn) {
+        if (game.getTeamTurn() != turn) return null; // not the AI's turn
+        maxPlayer = turn;
+        generateTree(game, turn);
+        double bestValue = Double.NEGATIVE_INFINITY;
+        ChessMove bestMove = null;
+        for (ChessMove m : root.getChildren().keySet()) {
+            Node child = root.getChildren().get(m);
+            double value = minimax(child, 1, Util.oppositeColor(turn), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+            if (value > bestValue) {
+                bestValue = value;
+                bestMove = m;
+            }
+        }
+        return bestMove;
     }
 
     private void generateTree(ChessGame game, ChessGame.TeamColor turn) {
@@ -39,14 +59,13 @@ public class ChessAI {
     }
 
     // minimax with alpha-beta pruning
-    private double minimax(Node n, int depth, boolean isMaxPlayer, double alpha, double beta) {
-        // leaf node (evaluation function)
-        if (depth == maxDepth) return n.evaluate();
+    private double minimax(Node n, int depth, ChessGame.TeamColor team, double alpha, double beta) {
+        if (n.getChildren().isEmpty()) return n.evaluate(team); // leaf node (evaluation function)
 
-        if (isMaxPlayer) {
+        if (team == maxPlayer) {
             double max = Double.NEGATIVE_INFINITY;
-            for (Node child : n.getChildren()) {
-                double value = minimax(child, depth + 1, false, alpha, beta);
+            for (Node child : n.getChildren().values()) {
+                double value = minimax(child, depth + 1, Util.oppositeColor(maxPlayer), alpha, beta);
                 if (value > max) max = value;
                 if (max > alpha) alpha = max;
                 if (beta <= alpha) break;
@@ -54,8 +73,8 @@ public class ChessAI {
             return max;
         } else {
             double min = Double.POSITIVE_INFINITY;
-            for (Node child : n.getChildren()) {
-                double value = minimax(child, depth + 1, true, alpha, beta);
+            for (Node child : n.getChildren().values()) {
+                double value = minimax(child, depth + 1, maxPlayer, alpha, beta);
                 if (value < min) min = value;
                 if (min < beta) beta = min;
                 if (beta <= alpha) break;
