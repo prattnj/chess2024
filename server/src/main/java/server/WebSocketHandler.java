@@ -8,6 +8,7 @@ import model.bean.GameBean;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
 import service.ai.ChessAI;
+import util.Util;
 import websocket.commands.ConnectAI;
 import websocket.commands.MakeMoveUC;
 import websocket.commands.UserGameCommand;
@@ -21,7 +22,7 @@ public class WebSocketHandler {
 
     private final Gson gson = new Gson();
     private final Map<Integer, Set<Session>> cache = new HashMap<>();
-    private final Map<Integer, AILevel> aiLevels = new HashMap<>();
+    private final Map<Integer, ChessAI> aiCache = new HashMap<>();
     private UserDAO udao;
     private GameDAO gdao;
     private static final ServerMessage.ServerMessageType LOAD_GAME = ServerMessage.ServerMessageType.LOAD_GAME;
@@ -109,7 +110,7 @@ public class WebSocketHandler {
         // add AI game to map if applicable
         if (gameIsAI()) {
             AILevel level = ((ConnectAI) command).getLevel();
-            if (!aiLevels.containsKey(currentGameID)) aiLevels.put(currentGameID, level);
+            if (!aiCache.containsKey(currentGameID)) aiCache.put(currentGameID, new ChessAI(level));
 
             // make AI move if applicable
             if (color == ChessGame.TeamColor.BLACK) aiMove(gson.fromJson(game, ChessGame.class));
@@ -201,9 +202,9 @@ public class WebSocketHandler {
 
     private void aiMove(ChessGame game) throws DataAccessException {
         // get ideal move given game and team
-        ChessAI ai = new ChessAI();
-        ChessGame.TeamColor aiColor = getColor() == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
-        ChessMove move = ai.getMove(game, aiColor, aiLevels.get(currentGameID));
+        ChessGame.TeamColor aiColor = Util.oppositeColor(getColor());
+        ChessAI ai = aiCache.get(currentGameID);
+        ChessMove move = ai.getMove(game, aiColor);
         moveLogic(game, move);
     }
 
