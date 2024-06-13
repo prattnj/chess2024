@@ -112,8 +112,9 @@ public class WebSocketHandler {
             AILevel level = ((ConnectAI) command).getLevel();
             if (!aiCache.containsKey(currentGameID)) aiCache.put(currentGameID, new ChessAI(level));
 
-            // make AI move if applicable
-            if (color == ChessGame.TeamColor.BLACK) aiMove(gson.fromJson(game, ChessGame.class));
+            // make AI move if it's AI's turn
+            ChessGame chessGame = gson.fromJson(game, ChessGame.class);
+            if (Util.oppositeColor(color) == chessGame.getTeamTurn()) aiMove(chessGame);
         }
     }
 
