@@ -33,7 +33,8 @@ public class PostLoginUI extends PreLoginUI {
                 case "h", "help" -> help();
                 case "c", "create" -> create(input);
                 case "ls", "list" -> list();
-                case "j", "join" -> join(input);
+                case "j", "join" -> join(input, false);
+                case "jai", "joinai" -> join(input, true);
                 case "o", "observe" -> observe(input);
                 case "lg", "logout" -> {if (logout()) return;}
                 case "q", "quit" -> quit();
@@ -48,6 +49,7 @@ public class PostLoginUI extends PreLoginUI {
         OUT.println("\"c <name>\", \"create <name>\": Create a new game");
         OUT.println("\"ls\", \"list\": List all existing games");
         OUT.println("\"j <gameID>\", \"join <gameID>\": Join an existing game specified by the given game ID");
+        OUT.println("\"jAI <gameID>\", \"joinAI <gameID>\": Join an existing game with an AI player");
         OUT.println("\"o <gameID>\", \"observe <gameID>\": Observe a game specified by the given game ID");
         OUT.println("\"lg\", \"logout\": Logout");
         OUT.println("\"q\", \"quit\": Exit the program");
@@ -88,7 +90,7 @@ public class PostLoginUI extends PreLoginUI {
         else for (ListGamesObj game : allGames) printGame(game);
     }
 
-    private void join(String input) {
+    private void join(String input, boolean isAI) {
 
         // determine gameID
         String[] parts = input.split(" ");
@@ -105,7 +107,7 @@ public class PostLoginUI extends PreLoginUI {
             return;
         }
 
-        joinOrObserve(teamColor, gameID, true);
+        joinOrObserve(teamColor, gameID, isAI);
     }
 
     private void observe(String input) {
@@ -118,32 +120,34 @@ public class PostLoginUI extends PreLoginUI {
         }
         int gameID = Integer.parseInt(parts[1]);
 
-        joinOrObserve(null, gameID, false);
+        joinOrObserve(null, gameID, );
     }
 
-    private void joinOrObserve(ChessGame.TeamColor color, int gameID, boolean isJoin) {
+    private void joinOrObserve(ChessGame.TeamColor color, int gameID, boolean isAI) {
 
-        if (isJoin) {
+        if (color != null) {
             // send join request to server
-            JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID, false);
+            JoinGameRequest request = new JoinGameRequest(Util.getStringForColor(color), gameID, isAI);
             BaseResponse response = server.join(request, authToken);
             if (response.getMessage() == null) {
                 updateGames();
                 OUT.println("Successfully joined game " + gameID);
-                new GameUI().start(gameID, color, true);
+                new GameUI().start(gameID, color, isAI);
             } else printError(response.getMessage());
         } else {
             updateGames();
             boolean validID = false;
             for (ListGamesObj lgo : allGames)
                 if (lgo.getGameID() == gameID) {
+                    if (lgo.getBlackUsername().equals(Util.AI_USERNAME) || lgo.getWhiteUsername().equals(Util.AI_USERNAME))
+                        isAI = true;
                     validID = true;
                     break;
                 }
             if (!validID) OUT.println("Invalid gameID. Try again.");
             else {
                 OUT.println("Successfully joined game " + gameID);
-                new GameUI().start(gameID, color, false);
+                new GameUI().start(gameID, null, isAI);
             }
         }
 
