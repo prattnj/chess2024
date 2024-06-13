@@ -120,7 +120,7 @@ public class PostLoginUI extends PreLoginUI {
         }
         int gameID = Integer.parseInt(parts[1]);
 
-        joinOrObserve(null, gameID, );
+        joinOrObserve(null, gameID, false);
     }
 
     private void joinOrObserve(ChessGame.TeamColor color, int gameID, boolean isAI) {
