@@ -14,6 +14,30 @@ public class ChessAI {
         return null;
     }
 
+    private void generateTree(ChessGame game, ChessGame.TeamColor turn) {
+        System.gc(); // remind the JVM to free up heap space from the last tree
+        root = new Node(game);
+        totalNodes = 0;
+        generateChildren(root, maxPlayer, 1);
+    }
+
+    // recursive helper function for tree generation
+    private void generateChildren(Node n, ChessGame.TeamColor turn, int depth) {
+        if (depth > MAX_DEPTH) return;
+        for (ChessMove m : n.getGame().validMoves(turn)) {
+            ChessGame game = n.getGame().clone();
+            try {
+                game.makeMove(m);
+            } catch (Exception e) { // shouldn't happen
+                continue;
+            }
+            Node child = new Node(game);
+            n.addChild(m, child);
+            totalNodes++;
+            generateChildren(child, Util.oppositeColor(turn), depth + 1);
+        }
+    }
+
     // minimax with alpha-beta pruning
     private double minimax(Node n, int depth, boolean isMaxPlayer, double alpha, double beta) {
         // leaf node (evaluation function)
