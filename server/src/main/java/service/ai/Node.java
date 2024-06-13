@@ -1,6 +1,5 @@
 package service.ai;
 
-import chess.ChessBoard;
 import chess.ChessGame;
 
 import java.util.ArrayList;
@@ -8,11 +7,11 @@ import java.util.List;
 
 public class Node {
 
-    private final ChessBoard board;
+    private final ChessGame game;
     private final List<Node> children = new ArrayList<>();
 
-    public Node(ChessBoard board) {
-        this.board = board;
+    public Node(ChessGame game) {
+        this.game = game;
     }
 
     public double evaluate(ChessGame.TeamColor turn) {
