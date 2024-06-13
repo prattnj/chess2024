@@ -356,7 +356,7 @@ public class ChessGame {
 
         // Make sure the last move was a double pawn move
         if (moveHistory.isEmpty()) return moves;
-        ChessMove lastMove = moveHistory.get(moveHistory.size() - 1);
+        ChessMove lastMove = moveHistory.getLast();
         if (!Objects.equals(lastMove.getEndPosition(), new ChessPosition(startPos.getRow(), startPos.getColumn() - 1)) &&
                 !Objects.equals(lastMove.getEndPosition(), new ChessPosition(startPos.getRow(), startPos.getColumn() + 1))) {
             return moves;
