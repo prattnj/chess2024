@@ -67,4 +67,18 @@ public class Util {
         if (color == null) return null;
         return color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
     }
+
+    public static String getStringForPiece(ChessPiece piece) {
+        if (piece == null) return null;
+        String str = switch (piece.getPieceType()) {
+            case KING -> "K";
+            case QUEEN -> "Q";
+            case ROOK -> "R";
+            case KNIGHT -> "N";
+            case BISHOP -> "B";
+            case PAWN -> "P";
+        };
+        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) str = str.toLowerCase();
+        return str;
+    }
 }

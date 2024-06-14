@@ -17,6 +17,8 @@ public class ChessGame {
     private final List<ChessMove> moveHistory = new ArrayList<>();
     private boolean isOver = false;
     private final Set<ChessMove> enPassantMoves = new HashSet<>();
+    private int halfMoveClock = 0;
+    private int fullMoveCounter = 1;
 
     public ChessGame() {
         board = new ChessBoard();
@@ -119,6 +121,7 @@ public class ChessGame {
         if (!validMoves(move.getStartPosition()).contains(move)) throw new InvalidMoveException("Error: invalid move");
 
         // at this point, move is valid and can be executed
+        ChessPiece victim = board.getPiece(move.getEndPosition());
         board.addPiece(move.getStartPosition(), null);
         if (move.getPromotionPiece() != null) {
             board.addPiece(move.getEndPosition(), new ChessPiece(mover.getTeamColor(), move.getPromotionPiece()));
@@ -146,6 +149,11 @@ public class ChessGame {
         }
 
         moveHistory.add(move);
+
+        // update move counters
+        if (mover.getPieceType() == ChessPiece.PieceType.PAWN || victim != null) halfMoveClock = 0;
+        else halfMoveClock++;
+        if (teamTurn == TeamColor.BLACK) fullMoveCounter++;
 
         // determine whether this move ended the game
         TeamColor opponent = Util.oppositeColor(teamTurn);
@@ -221,6 +229,18 @@ public class ChessGame {
         clone.moveHistory.addAll(moveHistory);
         clone.enPassantMoves.addAll(enPassantMoves);
         return clone;
+    }
+
+    // converts this game to a String in Forsyth-Edwards notation
+    public String toFEN() {
+        // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+        String boardFEN = board.toFEN();
+        String turnFEN = teamTurn.toString().substring(0, 1).toLowerCase();
+        String castlingFEN = castlingFEN();
+        String epFEN = epFEN();
+        String halfMoveFEN = halfMoveClock + "";
+        String fullMoveFEN = fullMoveCounter + "";
+        return String.join(" ", boardFEN, turnFEN, castlingFEN, epFEN, halfMoveFEN, fullMoveFEN);
     }
 
     // counts instances of a piece type for a given player
@@ -414,5 +434,37 @@ public class ChessGame {
             }
         }
         return null;
+    }
+
+    private String castlingFEN() {
+        StringBuilder sb = new StringBuilder();
+        ChessPiece whiteKing = board.getPiece(findKing(board, TeamColor.WHITE));
+        ChessPiece blackKing = board.getPiece(findKing(board, TeamColor.BLACK));
+        if (!pieceHasMoved(whiteKing)) {
+            ChessPiece ksRook = board.getPiece(new ChessPosition(1, 1));
+            ChessPiece qsRook = board.getPiece(new ChessPosition(1, 8));
+            if (ksRook != null && !pieceHasMoved(ksRook)) sb.append('K');
+            if (qsRook != null && !pieceHasMoved(qsRook)) sb.append('Q');
+        }
+        if (!pieceHasMoved(blackKing)) {
+            ChessPiece ksRook = board.getPiece(new ChessPosition(8, 1));
+            ChessPiece qsRook = board.getPiece(new ChessPosition(8, 8));
+            if (ksRook != null && !pieceHasMoved(ksRook)) sb.append('k');
+            if (qsRook != null && !pieceHasMoved(qsRook)) sb.append('q');
+        }
+        if (sb.isEmpty()) return "-";
+        return sb.toString();
+    }
+
+    private String epFEN() {
+        if (moveHistory.isEmpty()) return "-";
+        ChessPiece piece = board.getPiece(moveHistory.getLast().getEndPosition());
+        if (piece.getPieceType() != ChessPiece.PieceType.PAWN) return "-";
+        ChessPosition start = moveHistory.getLast().getStartPosition();
+        ChessPosition end = moveHistory.getLast().getEndPosition();
+        int delta = end.getRow() - start.getRow();
+        if (Math.abs(delta) != 2) return "-";
+        if (start.getRow() == 2) return (char)('a' + (start.getColumn() - 1)) + "3";
+        else return (char)('a' + (start.getColumn() - 1)) + "6";
     }
 }
