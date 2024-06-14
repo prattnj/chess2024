@@ -12,6 +12,7 @@ import util.Util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class PostLoginUI extends PreLoginUI {
 
@@ -139,7 +140,7 @@ public class PostLoginUI extends PreLoginUI {
             boolean validID = false;
             for (ListGamesObj lgo : allGames)
                 if (lgo.getGameID() == gameID) {
-                    if (lgo.getBlackUsername().equals(Util.AI_USERNAME) || lgo.getWhiteUsername().equals(Util.AI_USERNAME))
+                    if (Objects.equals(lgo.getBlackUsername(), (Util.AI_USERNAME)) || Objects.equals(lgo.getWhiteUsername(), (Util.AI_USERNAME)))
                         isAI = true;
                     validID = true;
                     break;

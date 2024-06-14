@@ -72,7 +72,7 @@ public class WebSocketHandler {
             // note: if this is a join of any kind, it has already been
             // sent to the server via HTTP join from the PostLoginUI client.
             switch (command.getCommandType()) {
-                case CONNECT -> connect(command);
+                case CONNECT -> connect(message);
                 case MAKE_MOVE -> makeMove(gson.fromJson(message, MakeMoveUC.class));
                 case RESIGN -> resign();
                 case LEAVE -> leave();
@@ -91,7 +91,7 @@ public class WebSocketHandler {
     }
 
     // COMMAND LOGIC
-    private void connect(UserGameCommand command) throws DataAccessException {
+    private void connect(String cmd) throws DataAccessException {
 
         // send a LOAD_GAME back to the root client
         String game = currentBean.getGame();
@@ -109,7 +109,7 @@ public class WebSocketHandler {
 
         // add AI game to map if applicable
         if (gameIsAI()) {
-            AILevel level = ((ConnectAI) command).getLevel();
+            AILevel level = (gson.fromJson(cmd, ConnectAI.class)).getLevel();
             if (!aiCache.containsKey(currentGameID)) aiCache.put(currentGameID, new ChessAI(level));
 
             // make AI move if it's AI's turn
@@ -232,9 +232,12 @@ public class WebSocketHandler {
         for (Session s : cache.get(currentGameID)) send(s, gson.toJson(new ServerMessage(LOAD_GAME, currentBean.getGame())));
 
         // send a NOTIFICATION to everyone except the root client (include root client if it's an AI move)
-        String msg = "The " + getColorString() + " player (" + currentUsername + ") made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
+        boolean aiTurn = game.getTeamTurn() == getColor();
+        String username = aiTurn ? "AI" : currentUsername;
+        ChessGame.TeamColor color = aiTurn ? Util.oppositeColor(getColor()) : getColor();
+        String msg = "The " + color.toString().toLowerCase() + " player (" + username + ") made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
         broadcast(msg);
-        if (gameIsAI()) send(root, msg);
+        if (gameIsAI() && aiTurn) send(root, gson.toJson(new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, msg)));
     }
 
     // HELPER METHODS
@@ -276,6 +279,7 @@ public class WebSocketHandler {
     }
 
     private boolean gameIsAI() {
+        if (currentBean.getWhiteUsername() == null || currentBean.getBlackUsername() == null) return false;
         return currentBean.getWhiteUsername().equals(Util.AI_USERNAME) || currentBean.getBlackUsername().equals(Util.AI_USERNAME);
     }
 }
