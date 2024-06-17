@@ -5,6 +5,8 @@ import chess.ChessMove;
 import model.AILevel;
 import util.Util;
 
+import java.util.Collection;
+
 public class ChessAI {
 
     private int totalNodes;
@@ -20,7 +22,7 @@ public class ChessAI {
         if (game.getTeamTurn() != turn) return null; // not the AI's turn
         maxPlayer = turn;
         totalNodes = 0;
-        Node root = new Node(game);
+        Node root = new Node(game.toFEN());
         generateChildren(root, maxPlayer);
         double bestValue = Double.NEGATIVE_INFINITY;
         ChessMove bestMove = null;
@@ -63,14 +65,11 @@ public class ChessAI {
     }
 
     private void generateChildren(Node n, ChessGame.TeamColor turn) {
-        for (ChessMove m : n.getGame().validMoves(turn)) {
-            ChessGame game = n.getGame().clone();
-            try {
-                game.makeMove(m);
-            } catch (Exception e) { // shouldn't happen
-                continue;
-            }
-            Node child = new Node(game);
+        Collection<ChessMove> moves = n.getGame().validMoves(turn);
+        for (ChessMove m : moves) {
+            ChessGame game = n.getGame();
+            game.makeMoveForce(m);
+            Node child = new Node(game.toFEN());
             n.addChild(m, child);
             totalNodes++;
         }

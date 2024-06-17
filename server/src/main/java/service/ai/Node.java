@@ -10,10 +10,10 @@ import java.util.Map;
 
 public class Node {
 
-    private final ChessGame game;
+    private final String game;
     private final Map<ChessMove, Node> children = new HashMap<>();
 
-    public Node(ChessGame game) {
+    public Node(String game) {
         this.game = game;
     }
 
@@ -21,8 +21,8 @@ public class Node {
         double myValue = 0.0;
         double oppValue = 0.0;
         for (ChessPiece.PieceType type : ChessPiece.PieceType.values()) {
-            int myInstances = game.countInstances(type, turn);
-            int oppInstances = game.countInstances(type, Util.oppositeColor(turn));
+            int myInstances = countInstances(type, turn);
+            int oppInstances = countInstances(type, Util.oppositeColor(turn));
             double multiplier = switch (type) {
                 case KING -> 0.0;
                 case QUEEN -> 9.0;
@@ -38,7 +38,7 @@ public class Node {
     }
 
     public ChessGame getGame() {
-        return game;
+        return new ChessGame(game);
     }
 
     public Map<ChessMove, Node> getChildren() {
@@ -47,5 +47,13 @@ public class Node {
 
     public void addChild(ChessMove m, Node child) {
         children.put(m, child);
+    }
+
+    private int countInstances(ChessPiece.PieceType type, ChessGame.TeamColor turn) {
+        char c = Util.getCharForType(type);
+        if (turn == ChessGame.TeamColor.BLACK) c = Character.toLowerCase(c);
+        int counter = 0;
+        for (char c1 : game.toCharArray()) if (c1 == c) counter++;
+        return counter;
     }
 }
