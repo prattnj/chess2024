@@ -25,6 +25,21 @@ public class ChessBoard {
         for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) this.board[i][j] = board.getPiece(new ChessPosition(i + 1, j + 1));
     }
 
+    public ChessBoard(String fen) {
+        board = new ChessPiece[8][8];
+        String[] rows = fen.split("/");
+        for (int i = 0; i < 8; i++) {
+            int col = 0;
+            for (char c : rows[i].toCharArray()) {
+                if (Character.isDigit(c)) col += (c - '0');
+                else {
+                    board[7 - i][col] = Util.getPieceForChar(c);
+                    col++;
+                }
+            }
+        }
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *

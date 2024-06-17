@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 public class FENTests {
 
     @Test
-    public void testFEN() throws InvalidMoveException {
+    public void testGameToFEN() throws InvalidMoveException {
         ChessGame game = new ChessGame();
         game.makeMove(new ChessMove(new ChessPosition(1, 2), new ChessPosition(3, 1), null));
         game.makeMove(new ChessMove(new ChessPosition(8, 2), new ChessPosition(6, 1), null));
@@ -18,5 +18,12 @@ public class FENTests {
         game.makeMove(new ChessMove(new ChessPosition(3, 1), new ChessPosition(1, 2), null));
         game.makeMove(new ChessMove(new ChessPosition(6, 1), new ChessPosition(8, 2), null));
         System.out.println(game.toFEN());
+    }
+
+    @Test
+    public void testFENToGame() {
+        String fen = "rnbqknbr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+        ChessGame game = new ChessGame(fen);
+        System.out.println('d');
     }
 }

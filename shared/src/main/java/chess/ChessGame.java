@@ -26,6 +26,16 @@ public class ChessGame {
         teamTurn = TeamColor.WHITE;
     }
 
+    // create this object from FEN. not all information will be included
+    public ChessGame(String fen) {
+        String[] parts = fen.split(" ");
+        this.board = new ChessBoard(parts[0]);
+        this.teamTurn = parts[1].equalsIgnoreCase("w") ? TeamColor.WHITE : TeamColor.BLACK;
+        // todo: castling, en passant
+        this.halfMoveClock = Integer.parseInt(parts[4]);
+        this.fullMoveCounter = Integer.parseInt(parts[5]);
+    }
+
     /**
      * @return Which team's turn it is
      */
@@ -147,6 +157,30 @@ public class ChessGame {
             int mod = move.getEndPosition().getColumn() - move.getStartPosition().getColumn();
             board.addPiece(new ChessPosition(move.getStartPosition().getRow(), move.getStartPosition().getColumn() + mod), null);
         }
+
+        moveHistory.add(move);
+
+        // update move counters
+        if (mover.getPieceType() == ChessPiece.PieceType.PAWN || victim != null) halfMoveClock = 0;
+        else halfMoveClock++;
+        if (teamTurn == TeamColor.BLACK) fullMoveCounter++;
+
+        // determine whether this move ended the game
+        TeamColor opponent = Util.oppositeColor(teamTurn);
+        if (isInCheckmate(opponent) || isInStalemate(opponent)) isOver = true;
+
+        // update whose turn it is
+        toggleTeamTurn();
+    }
+
+    // doesn't validate move (because that takes a while) and doesn't do castling or en passant
+    public void makeMoveForce(ChessMove move) {
+        ChessPiece mover = board.getPiece(move.getStartPosition());
+        ChessPiece victim = board.getPiece(move.getEndPosition());
+        board.addPiece(move.getStartPosition(), null);
+        if (move.getPromotionPiece() != null) {
+            board.addPiece(move.getEndPosition(), new ChessPiece(mover.getTeamColor(), move.getPromotionPiece()));
+        } else board.addPiece(move.getEndPosition(), mover);
 
         moveHistory.add(move);
 
