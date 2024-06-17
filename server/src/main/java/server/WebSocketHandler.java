@@ -33,6 +33,25 @@ public class WebSocketHandler {
     private String currentUsername;
     private GameBean currentBean;
 
+    public WebSocketHandler() {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(10000);
+                    for (Set<Session> sessions : cache.values()) {
+                        for (Session s : sessions) {
+                            if (s.isOpen()) {
+                                s.getRemote().sendPing(null);
+                            }
+                        }
+                    }
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
+
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
         root = session;
