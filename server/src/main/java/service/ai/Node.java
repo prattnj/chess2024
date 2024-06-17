@@ -1,19 +1,18 @@
 package service.ai;
 
 import chess.ChessGame;
-import chess.ChessMove;
 import chess.ChessPiece;
+import chess.SimpleGame;
 import util.Util;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class Node {
 
-    private final String game;
-    private final Map<ChessMove, Node> children = new HashMap<>();
+    private final SimpleGame game;
+    private final Collection<Node> children = new HashSet<>();
 
-    public Node(String game) {
+    public Node(SimpleGame game) {
         this.game = game;
     }
 
@@ -37,23 +36,21 @@ public class Node {
         return myValue - oppValue;
     }
 
-    public ChessGame getGame() {
-        return new ChessGame(game);
+    public SimpleGame getGame() {
+        return game;
     }
 
-    public Map<ChessMove, Node> getChildren() {
+    public Collection<Node> getChildren() {
         return children;
     }
 
-    public void addChild(ChessMove m, Node child) {
-        children.put(m, child);
+    public void addChild(Node child) {
+        children.add(child);
     }
 
     private int countInstances(ChessPiece.PieceType type, ChessGame.TeamColor turn) {
         char c = Util.getCharForType(type);
         if (turn == ChessGame.TeamColor.BLACK) c = Character.toLowerCase(c);
-        int counter = 0;
-        for (char c1 : game.toCharArray()) if (c1 == c) counter++;
-        return counter;
+        return game.countInstances(c);
     }
 }

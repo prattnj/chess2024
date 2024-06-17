@@ -1,16 +1,15 @@
 package service.ai;
 
-import chess.ChessGame;
-import chess.ChessMove;
+import chess.*;
 import model.AILevel;
 import util.Util;
 
-import java.util.Collection;
+import java.util.LinkedList;
 
 public class ChessAI {
 
     private int totalNodes;
-    private final static int MAX_DEPTH = 4;
+    private final static int MAX_DEPTH = 7;
     private final AILevel level;
     private ChessGame.TeamColor maxPlayer;
 
@@ -22,19 +21,26 @@ public class ChessAI {
         if (game.getTeamTurn() != turn) return null; // not the AI's turn
         maxPlayer = turn;
         totalNodes = 0;
-        Node root = new Node(game.toFEN());
-        generateChildren(root, maxPlayer);
+
+        SimpleGame sg = new SimpleGame(game);
+
         double bestValue = Double.NEGATIVE_INFINITY;
-        ChessMove bestMove = null;
-        for (ChessMove m : root.getChildren().keySet()) {
-            Node child = root.getChildren().get(m);
+        int[] bestMove = null;
+
+        LinkedList<int[]> initialMoves = sg.validMoves(turn == ChessGame.TeamColor.WHITE ? 1 : 2);
+        for (int[] m : initialMoves) {
+            SimpleGame sg1 = new SimpleGame(game);
+            sg1.makeMove(m);
+            Node child = new Node(new SimpleGame());
+            totalNodes++;
             double value = minimax(child, 1, Util.oppositeColor(turn), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             if (value > bestValue) {
                 bestValue = value;
                 bestMove = m;
             }
         }
-        return bestMove;
+        System.out.println("Total nodes: " + totalNodes);
+        return simpleToComplexMove(bestMove);
     }
 
     // minimax with alpha-beta pruning
@@ -45,7 +51,7 @@ public class ChessAI {
 
         if (team == maxPlayer) {
             double max = Double.NEGATIVE_INFINITY;
-            for (Node child : n.getChildren().values()) {
+            for (Node child : n.getChildren()) {
                 double value = minimax(child, depth + 1, Util.oppositeColor(maxPlayer), alpha, beta);
                 if (value > max) max = value;
                 if (max > alpha) alpha = max;
@@ -54,7 +60,7 @@ public class ChessAI {
             return max;
         } else {
             double min = Double.POSITIVE_INFINITY;
-            for (Node child : n.getChildren().values()) {
+            for (Node child : n.getChildren()) {
                 double value = minimax(child, depth + 1, maxPlayer, alpha, beta);
                 if (value < min) min = value;
                 if (min < beta) beta = min;
@@ -65,13 +71,21 @@ public class ChessAI {
     }
 
     private void generateChildren(Node n, ChessGame.TeamColor turn) {
-        Collection<ChessMove> moves = n.getGame().validMoves(turn);
-        for (ChessMove m : moves) {
-            ChessGame game = n.getGame();
-            game.makeMoveForce(m);
-            Node child = new Node(game.toFEN());
-            n.addChild(m, child);
+        LinkedList<int[]> moves = n.getGame().validMoves(turn == ChessGame.TeamColor.WHITE ? 1 : 2);
+        for (int[] m : moves) {
+            SimpleGame game = n.getGame().clone();
+            game.makeMove(m);
+            Node child = new Node(game);
+            n.addChild(child);
             totalNodes++;
         }
+    }
+
+    private ChessMove simpleToComplexMove(int[] m) {
+        ChessPosition start = new ChessPosition(m[0] + 1, m[1] + 1);
+        ChessPosition end = new ChessPosition(m[2] + 1, m[3] + 1);
+        ChessPiece.PieceType promo = null;
+        if (m.length > 4) promo = ChessPiece.PieceType.values()[m[4]];
+        return new ChessMove(start, end, promo);
     }
 }
