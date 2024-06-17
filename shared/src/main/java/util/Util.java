@@ -81,4 +81,44 @@ public class Util {
         if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) str = str.toLowerCase();
         return str;
     }
+
+    public static Character getCharForType(ChessPiece.PieceType type) {
+        if (type == null) return null;
+        return switch (type) {
+            case KING -> 'K';
+            case QUEEN -> 'Q';
+            case ROOK -> 'R';
+            case KNIGHT -> 'N';
+            case BISHOP -> 'B';
+            case PAWN -> 'P';
+        };
+    }
+
+    public static ChessPiece getPieceForChar(char c) {
+        ChessPiece.PieceType type = switch (c) {
+            case 'K', 'k' -> ChessPiece.PieceType.KING;
+            case 'Q', 'q' -> ChessPiece.PieceType.QUEEN;
+            case 'R', 'r' -> ChessPiece.PieceType.ROOK;
+            case 'N', 'n' -> ChessPiece.PieceType.KNIGHT;
+            case 'B', 'b' -> ChessPiece.PieceType.BISHOP;
+            case 'P', 'p' -> ChessPiece.PieceType.PAWN;
+            default -> null;
+        };
+        ChessGame.TeamColor color = Character.isLowerCase(c) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        if (type == null) return null;
+        return new ChessPiece(color, type);
+    }
+
+    public static ChessPiece.PieceType getTypeForChar(char c) {
+        c = Character.toLowerCase(c);
+        return switch (c) {
+            case 'k' -> ChessPiece.PieceType.KING;
+            case 'q' -> ChessPiece.PieceType.QUEEN;
+            case 'r' -> ChessPiece.PieceType.ROOK;
+            case 'n' -> ChessPiece.PieceType.KNIGHT;
+            case 'b' -> ChessPiece.PieceType.BISHOP;
+            case 'p' -> ChessPiece.PieceType.PAWN;
+            default -> null;
+        };
+    }
 }
