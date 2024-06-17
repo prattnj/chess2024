@@ -7,14 +7,26 @@ import java.util.LinkedList;
 // no castling, en passant, or other special moves
 public class SimpleGame {
 
-    char[][] board;
-    int turn; // 1 white, 2 black
-    boolean ongoing;
+    private char[][] board;
+    private int turn; // 1 white, 2 black
+    private boolean ongoing;
 
     public SimpleGame() {
         resetBoard();
         turn = 1;
         ongoing = true;
+    }
+
+    public SimpleGame(ChessGame game) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPiece piece = game.getBoard().getPiece(new ChessPosition(i, j));
+                if (piece == null) board[i - 1][j - 1] = 0;
+                else board[i - 1][j - 1] = Util.getStringForPiece(piece).charAt(0);
+            }
+        }
+        this.turn = game.getTeamTurn() == ChessGame.TeamColor.WHITE ? 1 : 2;
+        this.ongoing = !game.isOver();
     }
 
     // example move: 0,1,3,3 == move from b1 to d4
@@ -160,6 +172,10 @@ public class SimpleGame {
         }
 
         return false;
+    }
+
+    public boolean isOngoing() {
+        return ongoing;
     }
 
     private void resetBoard() {
