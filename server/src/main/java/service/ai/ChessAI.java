@@ -4,17 +4,20 @@ import chess.*;
 import model.AILevel;
 import util.Util;
 
-import java.util.LinkedList;
+import java.util.*;
 
 public class ChessAI {
 
     private int totalNodes;
-    private final static int MAX_DEPTH = 7;
-    private final AILevel level;
+    private final int maxDepth;
     private ChessGame.TeamColor maxPlayer;
 
     public ChessAI(AILevel level) {
-        this.level = level;
+        this.maxDepth = switch (level) {
+            case EASY -> 2;
+            case MEDIUM -> 4;
+            case HARD -> 6;
+        };
     }
 
     public ChessMove getMove(ChessGame game, ChessGame.TeamColor turn) {
@@ -25,27 +28,30 @@ public class ChessAI {
         SimpleGame sg = new SimpleGame(game);
 
         double bestValue = Double.NEGATIVE_INFINITY;
-        int[] bestMove = null;
+        List<int[]> bestMoves = new ArrayList<>();
 
-        LinkedList<int[]> initialMoves = sg.validMoves(turn == ChessGame.TeamColor.WHITE ? 1 : 2);
-        for (int[] m : initialMoves) {
+        for (int[] m : sg.validMoves(turn == ChessGame.TeamColor.WHITE ? 1 : 2)) {
             SimpleGame sg1 = new SimpleGame(game);
             sg1.makeMove(m);
-            Node child = new Node(new SimpleGame());
+            Node child = new Node(sg1);
             totalNodes++;
             double value = minimax(child, 1, Util.oppositeColor(turn), Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
             if (value > bestValue) {
+                bestMoves.clear();
+                bestMoves.add(m);
                 bestValue = value;
-                bestMove = m;
+            } else if (value == bestValue) {
+                bestMoves.add(m);
             }
         }
-        System.out.println("Total nodes: " + totalNodes);
-        return simpleToComplexMove(bestMove);
+
+        // select a random move of the best/worst moves
+        return simpleToComplexMove(bestMoves.get(new Random().nextInt(bestMoves.size())));
     }
 
     // minimax with alpha-beta pruning
     private double minimax(Node n, int depth, ChessGame.TeamColor team, double alpha, double beta) {
-        if (depth == MAX_DEPTH) return n.evaluate(team); // leaf node (evaluation function)
+        if (depth == maxDepth) return n.evaluate(team); // leaf node (evaluation function)
 
         generateChildren(n, team);
 
