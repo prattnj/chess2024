@@ -17,23 +17,39 @@ public class Node {
     }
 
     public double evaluate(ChessGame.TeamColor turn) {
+        if (game.inCheckmate(turn == ChessGame.TeamColor.WHITE ? 1 : 2)) return Double.NEGATIVE_INFINITY; // player checkmate
+        if (game.inCheckmate(turn == ChessGame.TeamColor.WHITE ? 2 : 1)) return Double.POSITIVE_INFINITY; // opp checkmate
+
         double myValue = 0.0;
         double oppValue = 0.0;
         for (ChessPiece.PieceType type : ChessPiece.PieceType.values()) {
-            int myInstances = countInstances(type, turn);
-            int oppInstances = countInstances(type, Util.oppositeColor(turn));
-            double multiplier = switch (type) {
+            double myInstances = countInstances(type, turn);
+            double oppInstances = countInstances(type, Util.oppositeColor(turn));
+            double multiplier = switch (type) { // DON'T MODIFY THESE
                 case KING -> 0.0;
                 case QUEEN -> 9.0;
                 case ROOK -> 5.0;
-                case BISHOP -> 4.0;
-                case KNIGHT -> 3.0;
+                case BISHOP, KNIGHT -> 3.0;
                 case PAWN -> 1.0;
             };
             myValue += (myInstances * multiplier);
             oppValue += (oppInstances * multiplier);
         }
-        return myValue - oppValue;
+
+        // calling validMoves twice here makes AI take twice as long
+        double myMoves = 1;//game.validMoves(turn == ChessGame.TeamColor.WHITE ? 1 : 2).size();
+        double oppMoves = 1;//game.validMoves(turn == ChessGame.TeamColor.WHITE ? 2 : 1).size();
+
+        double pieceScore = (myValue - oppValue) / (myValue + oppValue);
+        double pieceMultiplier = 1.0;
+
+        double positionScore = 0.0;
+        double positionMultiplier = 0.0;
+
+        double mobilityScore = (myMoves - oppMoves) / (myMoves + oppMoves);
+        double mobilityMultiplier = 0.0;
+
+        return (pieceMultiplier * pieceScore) + (positionMultiplier * positionScore) + (mobilityMultiplier * mobilityScore);
     }
 
     public SimpleGame getGame() {
