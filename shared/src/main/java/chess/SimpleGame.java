@@ -9,12 +9,10 @@ public class SimpleGame {
 
     private char[][] board;
     private int turn; // 1 white, 2 black
-    private boolean ongoing;
 
     public SimpleGame() {
         resetBoard();
         turn = 1;
-        ongoing = true;
     }
 
     public SimpleGame(ChessGame game) {
@@ -26,7 +24,6 @@ public class SimpleGame {
             }
         }
         this.turn = game.getTeamTurn() == ChessGame.TeamColor.WHITE ? 1 : 2;
-        this.ongoing = !game.isOver();
     }
 
     // example move: 0,1,3,3 == move from b1 to d4
@@ -74,12 +71,11 @@ public class SimpleGame {
         updateBoard(move, (char)0, mover, true);
 
         turn = turn == 1 ? 2 : 1; // toggle whose turn it is
-
-        // todo: check for checkmate/stalemate
     }
 
     public boolean inCheck(int team) {
         int[] pos = findKing(team);
+        if (pos == null) return false; // this shouldn't happen, but for some reason it does
         int row = pos[0];
         int col = pos[1];
         int d = team == 1 ? 1 : -1;
@@ -200,15 +196,18 @@ public class SimpleGame {
         return turn;
     }
 
-    public boolean isOngoing() {
-        return ongoing;
+    public boolean inCheckmate(int team) {
+        return validMoves(team).isEmpty() && inCheck(team);
+    }
+
+    public boolean inStalemate(int team) {
+        return validMoves(team).isEmpty() && !inCheck(team);
     }
 
     public SimpleGame clone() {
         SimpleGame clone = new SimpleGame();
         for (int i = 0; i < 8; i++) System.arraycopy(board[i], 0, clone.board[i], 0, 8);
         clone.turn = turn;
-        clone.ongoing = ongoing;
         return clone;
     }
 
