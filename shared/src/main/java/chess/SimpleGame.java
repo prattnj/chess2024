@@ -81,8 +81,16 @@ public class SimpleGame {
         int d = team == 1 ? 1 : -1;
         char q = team == 1 ? 'q' : 'Q';
 
+        // danger from king
+        char c = team == 1 ? 'k' : 'K';
+        for (int i = -1; i <= 1; i++) {
+            for (int j = -1; j <= 1; j++) {
+                if (positionInBounds(row + i, col + j) && board[row + i][col + j] == c) return true;
+            }
+        }
+
         // danger from pawn
-        char c = team == 1 ? 'p' : 'P';
+        c = team == 1 ? 'p' : 'P';
         if (positionInBounds(row + d, col - 1) && board[row + d][col - 1] == c) return true;
         if (positionInBounds(row + d, col + 1) && board[row + d][col + 1] == c) return true;
 
