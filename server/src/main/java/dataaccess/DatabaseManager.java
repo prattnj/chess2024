@@ -1,5 +1,9 @@
 package dataaccess;
 
+import dataaccess.mysql.MySQLUserDAO;
+import model.bean.UserBean;
+import util.Util;
+
 import java.sql.*;
 import java.util.Properties;
 
@@ -69,6 +73,7 @@ CREATE TABLE IF NOT EXISTS auth (
             for (String scheme : SCHEMA) {
                 conn.prepareStatement(scheme).executeUpdate();
             }
+            new MySQLUserDAO().insert(new UserBean(Util.AI_USERNAME, "aiPassw0rd", "ai"));
         } catch (SQLException e) {
             throw new DataAccessException(e.getMessage());
         }

@@ -22,6 +22,8 @@ public class Util {
 
     public static final String SERVER_ERROR = "Internal server error";
 
+    public static final String AI_USERNAME = "ai";
+
     /**
      * Generates a random n-digit integer
      * @param digits The number of digits in this random ID
@@ -59,5 +61,64 @@ public class Util {
         if (color == ChessGame.TeamColor.WHITE) return "white";
         else if (color == ChessGame.TeamColor.BLACK) return "black";
         else return null;
+    }
+
+    public static ChessGame.TeamColor oppositeColor(ChessGame.TeamColor color) {
+        if (color == null) return null;
+        return color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+    }
+
+    public static String getStringForPiece(ChessPiece piece) {
+        if (piece == null) return null;
+        String str = switch (piece.getPieceType()) {
+            case KING -> "K";
+            case QUEEN -> "Q";
+            case ROOK -> "R";
+            case KNIGHT -> "N";
+            case BISHOP -> "B";
+            case PAWN -> "P";
+        };
+        if (piece.getTeamColor() == ChessGame.TeamColor.BLACK) str = str.toLowerCase();
+        return str;
+    }
+
+    public static Character getCharForType(ChessPiece.PieceType type) {
+        if (type == null) return null;
+        return switch (type) {
+            case KING -> 'K';
+            case QUEEN -> 'Q';
+            case ROOK -> 'R';
+            case KNIGHT -> 'N';
+            case BISHOP -> 'B';
+            case PAWN -> 'P';
+        };
+    }
+
+    public static ChessPiece getPieceForChar(char c) {
+        ChessPiece.PieceType type = switch (c) {
+            case 'K', 'k' -> ChessPiece.PieceType.KING;
+            case 'Q', 'q' -> ChessPiece.PieceType.QUEEN;
+            case 'R', 'r' -> ChessPiece.PieceType.ROOK;
+            case 'N', 'n' -> ChessPiece.PieceType.KNIGHT;
+            case 'B', 'b' -> ChessPiece.PieceType.BISHOP;
+            case 'P', 'p' -> ChessPiece.PieceType.PAWN;
+            default -> null;
+        };
+        ChessGame.TeamColor color = Character.isLowerCase(c) ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        if (type == null) return null;
+        return new ChessPiece(color, type);
+    }
+
+    public static ChessPiece.PieceType getTypeForChar(char c) {
+        c = Character.toLowerCase(c);
+        return switch (c) {
+            case 'k' -> ChessPiece.PieceType.KING;
+            case 'q' -> ChessPiece.PieceType.QUEEN;
+            case 'r' -> ChessPiece.PieceType.ROOK;
+            case 'n' -> ChessPiece.PieceType.KNIGHT;
+            case 'b' -> ChessPiece.PieceType.BISHOP;
+            case 'p' -> ChessPiece.PieceType.PAWN;
+            default -> null;
+        };
     }
 }

@@ -1,6 +1,10 @@
 package chess;
 
+import util.Util;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -19,6 +23,21 @@ public class ChessBoard {
     public ChessBoard(ChessBoard board) {
         this.board = new ChessPiece[8][8];
         for (int i = 0; i < 8; i++) for (int j = 0; j < 8; j++) this.board[i][j] = board.getPiece(new ChessPosition(i + 1, j + 1));
+    }
+
+    public ChessBoard(String fen) {
+        board = new ChessPiece[8][8];
+        String[] rows = fen.split("/");
+        for (int i = 0; i < 8; i++) {
+            int col = 0;
+            for (char c : rows[i].toCharArray()) {
+                if (Character.isDigit(c)) col += (c - '0');
+                else {
+                    board[7 - i][col] = Util.getPieceForChar(c);
+                    col++;
+                }
+            }
+        }
     }
 
     /**
@@ -72,6 +91,30 @@ public class ChessBoard {
         board[7][6] = new ChessPiece(black, ChessPiece.PieceType.KNIGHT);
         board[7][7] = new ChessPiece(black, ChessPiece.PieceType.ROOK);
         for (int i = 0; i < 8; i++) board[6][i] = new ChessPiece(black, ChessPiece.PieceType.PAWN);
+    }
+
+    public String toFEN() {
+        List<String> rows = new ArrayList<>();
+        // start at black side
+        for (int r = 7; r >= 0; r--) {
+            int empties = 0;
+            StringBuilder sb = new StringBuilder();
+            for (int c = 0; c <= 7; c++) {
+                ChessPiece piece = board[r][c];
+                String pieceStr = Util.getStringForPiece(piece);
+                if (pieceStr == null) {
+                    empties++;
+                    if (c < 7) continue;
+                }
+                if (empties > 0) sb.append(empties);
+                if (pieceStr != null) {
+                    empties = 0;
+                    sb.append(pieceStr);
+                }
+            }
+            rows.add(sb.toString());
+        }
+        return String.join("/", rows);
     }
 
     @Override

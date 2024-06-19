@@ -1,7 +1,10 @@
 package ui;
 
 import chess.*;
+import model.AILevel;
 import net.WSConnection;
+import util.Util;
+import websocket.commands.ConnectAI;
 import websocket.commands.MakeMoveUC;
 import websocket.commands.UserGameCommand;
 
@@ -12,22 +15,32 @@ public class GameUI extends Client implements WSConnection.GameUI {
 
     private ChessGame game;
     private int gameID;
-    private boolean isPlayer;
     private ChessGame.TeamColor color;
 
     public GameUI() {
         connection.assignGameUI(this);
     }
 
-    public void start(int gameID, ChessGame.TeamColor color, boolean isPlayer) {
+    public void start(int gameID, ChessGame.TeamColor color, boolean isAI) {
         this.color = color;
         this.gameID = gameID;
-        this.isPlayer = isPlayer;
+
+        UserGameCommand command = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+        if (isAI && color != null) {
+            // prompt for difficulty level
+            OUT.println("What difficulty level would you like for the AI?");
+            AILevel level;
+            while (true) {
+                level = levelFromString(prompt("(e)asy, (m)edium, or (h)ard: "));
+                if (level != null) break;
+                else OUT.println("Invalid option, try again.");
+            }
+            command = new ConnectAI(authToken, gameID, level);
+        }
+        connection.send(gson.toJson(command));
 
         OUT.println("\nEntered in-game mode.");
         OUT.println("(" + HELP + ")");
-
-        connection.send(gson.toJson(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID)));
 
         while(true) {
             basePrompt();
@@ -69,7 +82,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
     private void move(String input) {
 
         // make sure this is a player
-        if (!isPlayer) {
+        if (color == null) {
             printError("You can't move as an observer.");
             return;
         }
@@ -163,7 +176,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
     private void resign() {
 
         // make sure this is a player
-        if (!isPlayer) {
+        if (color == null) {
             printError("You can't resign as an observer.");
             return;
         }
@@ -190,7 +203,7 @@ public class GameUI extends Client implements WSConnection.GameUI {
         this.game = game;
         drawBoard();
         ChessGame.TeamColor color = game.getTeamTurn();
-        ChessGame.TeamColor otherColor = color == ChessGame.TeamColor.WHITE ? ChessGame.TeamColor.BLACK : ChessGame.TeamColor.WHITE;
+        ChessGame.TeamColor otherColor = Util.oppositeColor(color);
         if (game.isOver()) {
             if (game.isInCheckmate(color)) OUT.println("Checkmate! The " + otherColor + " player wins.");
             else if (game.isInStalemate(color)) OUT.println("Stalemate! The game is over.");
@@ -289,5 +302,14 @@ public class GameUI extends Client implements WSConnection.GameUI {
 
     private void basePrompt() {
         OUT.print(EscapeSequences.SET_TEXT_COLOR_BLUE + "\nchess> " + EscapeSequences.SET_TEXT_COLOR_WHITE);
+    }
+
+    private AILevel levelFromString(String s) {
+        return switch (s.toLowerCase()) {
+            case "e", "easy" -> AILevel.EASY;
+            case "m", "med", "medium" -> AILevel.MEDIUM;
+            case "h", "hard" -> AILevel.HARD;
+            default -> null;
+        };
     }
 }

@@ -1,5 +1,7 @@
 package chess;
 
+import util.Util;
+
 import java.util.*;
 
 /**
@@ -15,11 +17,23 @@ public class ChessGame {
     private final List<ChessMove> moveHistory = new ArrayList<>();
     private boolean isOver = false;
     private final Set<ChessMove> enPassantMoves = new HashSet<>();
+    private int halfMoveClock = 0;
+    private int fullMoveCounter = 1;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         teamTurn = TeamColor.WHITE;
+    }
+
+    // create this object from FEN. not all information will be included
+    public ChessGame(String fen) {
+        String[] parts = fen.split(" ");
+        this.board = new ChessBoard(parts[0]);
+        this.teamTurn = parts[1].equalsIgnoreCase("w") ? TeamColor.WHITE : TeamColor.BLACK;
+        // todo: castling, en passant
+        this.halfMoveClock = Integer.parseInt(parts[4]);
+        this.fullMoveCounter = Integer.parseInt(parts[5]);
     }
 
     /**
@@ -76,6 +90,25 @@ public class ChessGame {
     }
 
     /**
+     * Gets a collection of every move a player can make (uses the other validMoves method)
+     *
+     * @param color the player in question
+     * @return A collection of valid moves
+     */
+    public Collection<ChessMove> validMoves(TeamColor color) {
+        Collection<ChessMove> moves = new HashSet<>();
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition pos = new ChessPosition(i, j);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null || piece.getTeamColor() != color) continue;
+                moves.addAll(validMoves(pos));
+            }
+        }
+        return moves;
+    }
+
+    /**
      * Makes a move in a chess game
      *
      * @param move chess move to preform
@@ -98,6 +131,7 @@ public class ChessGame {
         if (!validMoves(move.getStartPosition()).contains(move)) throw new InvalidMoveException("Error: invalid move");
 
         // at this point, move is valid and can be executed
+        ChessPiece victim = board.getPiece(move.getEndPosition());
         board.addPiece(move.getStartPosition(), null);
         if (move.getPromotionPiece() != null) {
             board.addPiece(move.getEndPosition(), new ChessPiece(mover.getTeamColor(), move.getPromotionPiece()));
@@ -126,8 +160,37 @@ public class ChessGame {
 
         moveHistory.add(move);
 
+        // update move counters
+        if (mover.getPieceType() == ChessPiece.PieceType.PAWN || victim != null) halfMoveClock = 0;
+        else halfMoveClock++;
+        if (teamTurn == TeamColor.BLACK) fullMoveCounter++;
+
         // determine whether this move ended the game
-        TeamColor opponent = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        TeamColor opponent = Util.oppositeColor(teamTurn);
+        if (isInCheckmate(opponent) || isInStalemate(opponent)) isOver = true;
+
+        // update whose turn it is
+        toggleTeamTurn();
+    }
+
+    // doesn't validate move (because that takes a while) and doesn't do castling or en passant
+    public void makeMoveForce(ChessMove move) {
+        ChessPiece mover = board.getPiece(move.getStartPosition());
+        ChessPiece victim = board.getPiece(move.getEndPosition());
+        board.addPiece(move.getStartPosition(), null);
+        if (move.getPromotionPiece() != null) {
+            board.addPiece(move.getEndPosition(), new ChessPiece(mover.getTeamColor(), move.getPromotionPiece()));
+        } else board.addPiece(move.getEndPosition(), mover);
+
+        moveHistory.add(move);
+
+        // update move counters
+        if (mover.getPieceType() == ChessPiece.PieceType.PAWN || victim != null) halfMoveClock = 0;
+        else halfMoveClock++;
+        if (teamTurn == TeamColor.BLACK) fullMoveCounter++;
+
+        // determine whether this move ended the game
+        TeamColor opponent = Util.oppositeColor(teamTurn);
         if (isInCheckmate(opponent) || isInStalemate(opponent)) isOver = true;
 
         // update whose turn it is
@@ -151,7 +214,7 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        return noValidMoves(teamColor) && isInCheck(teamColor);
+        return validMoves(teamColor).isEmpty() && isInCheck(teamColor);
     }
 
     /**
@@ -162,7 +225,7 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        return noValidMoves(teamColor) && !isInCheck(teamColor);
+        return validMoves(teamColor).isEmpty() && !isInCheck(teamColor);
     }
 
     /**
@@ -192,8 +255,44 @@ public class ChessGame {
         this.isOver = isOver;
     }
 
+    public ChessGame clone() {
+        ChessGame clone = new ChessGame();
+        clone.board = new ChessBoard(board);
+        clone.isOver = isOver;
+        clone.teamTurn = teamTurn;
+        clone.moveHistory.addAll(moveHistory);
+        clone.enPassantMoves.addAll(enPassantMoves);
+        return clone;
+    }
+
+    // converts this game to a String in Forsyth-Edwards notation
+    public String toFEN() {
+        // rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1
+        String boardFEN = board.toFEN();
+        String turnFEN = teamTurn.toString().substring(0, 1).toLowerCase();
+        String castlingFEN = castlingFEN();
+        String epFEN = epFEN();
+        String halfMoveFEN = halfMoveClock + "";
+        String fullMoveFEN = fullMoveCounter + "";
+        return String.join(" ", boardFEN, turnFEN, castlingFEN, epFEN, halfMoveFEN, fullMoveFEN);
+    }
+
+    // counts instances of a piece type for a given player
+    public int countInstances(ChessPiece.PieceType type, TeamColor color) {
+        int instances = 0;
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
+                ChessPosition pos = new ChessPosition(i, j);
+                ChessPiece piece = board.getPiece(pos);
+                if (piece == null) continue;
+                if (piece.getPieceType() == type && piece.getTeamColor() == color) instances++;
+            }
+        }
+        return instances;
+    }
+
     private void toggleTeamTurn() {
-        teamTurn = teamTurn == TeamColor.WHITE ? TeamColor.BLACK : TeamColor.WHITE;
+        teamTurn = Util.oppositeColor(teamTurn);
     }
 
     private ChessPosition findKing(ChessBoard board, ChessGame.TeamColor color) {
@@ -214,6 +313,7 @@ public class ChessGame {
         // checks if a position is endangered by any enemy piece
         if (endPos == null) return false;
         ChessPiece victim = board.getPiece(endPos);
+        if (victim == null) return false;
 
         for (int i = 1; i <= 8; i++) {
             for (int j = 1; j <= 8; j++) {
@@ -336,7 +436,7 @@ public class ChessGame {
 
         // Make sure the last move was a double pawn move
         if (moveHistory.isEmpty()) return moves;
-        ChessMove lastMove = moveHistory.get(moveHistory.size() - 1);
+        ChessMove lastMove = moveHistory.getLast();
         if (!Objects.equals(lastMove.getEndPosition(), new ChessPosition(startPos.getRow(), startPos.getColumn() - 1)) &&
                 !Objects.equals(lastMove.getEndPosition(), new ChessPosition(startPos.getRow(), startPos.getColumn() + 1))) {
             return moves;
@@ -370,15 +470,35 @@ public class ChessGame {
         return null;
     }
 
-    // iterate through board to see if this player has any valid moves
-    private boolean noValidMoves(TeamColor teamColor) {
-        for (int i = 1; i <= 8; i++) {
-            for (int j = 1; j <= 8; j++) {
-                ChessPosition pos = new ChessPosition(i, j);
-                ChessPiece resident = board.getPiece(pos);
-                if (resident != null && resident.getTeamColor() == teamColor) if (!validMoves(pos).isEmpty()) return false;
-            }
+    private String castlingFEN() {
+        StringBuilder sb = new StringBuilder();
+        ChessPiece whiteKing = board.getPiece(findKing(board, TeamColor.WHITE));
+        ChessPiece blackKing = board.getPiece(findKing(board, TeamColor.BLACK));
+        if (!pieceHasMoved(whiteKing)) {
+            ChessPiece ksRook = board.getPiece(new ChessPosition(1, 1));
+            ChessPiece qsRook = board.getPiece(new ChessPosition(1, 8));
+            if (ksRook != null && !pieceHasMoved(ksRook)) sb.append('K');
+            if (qsRook != null && !pieceHasMoved(qsRook)) sb.append('Q');
         }
-        return true;
+        if (!pieceHasMoved(blackKing)) {
+            ChessPiece ksRook = board.getPiece(new ChessPosition(8, 1));
+            ChessPiece qsRook = board.getPiece(new ChessPosition(8, 8));
+            if (ksRook != null && !pieceHasMoved(ksRook)) sb.append('k');
+            if (qsRook != null && !pieceHasMoved(qsRook)) sb.append('q');
+        }
+        if (sb.isEmpty()) return "-";
+        return sb.toString();
+    }
+
+    private String epFEN() {
+        if (moveHistory.isEmpty()) return "-";
+        ChessPiece piece = board.getPiece(moveHistory.getLast().getEndPosition());
+        if (piece.getPieceType() != ChessPiece.PieceType.PAWN) return "-";
+        ChessPosition start = moveHistory.getLast().getStartPosition();
+        ChessPosition end = moveHistory.getLast().getEndPosition();
+        int delta = end.getRow() - start.getRow();
+        if (Math.abs(delta) != 2) return "-";
+        if (start.getRow() == 2) return (char)('a' + (start.getColumn() - 1)) + "3";
+        else return (char)('a' + (start.getColumn() - 1)) + "6";
     }
 }

@@ -11,6 +11,8 @@ public class RAMAuthTokenDAO implements AuthTokenDAO {
     private static final AuthTokenDAO INSTANCE = new RAMAuthTokenDAO();
     private final Map<String, AuthTokenBean> table = new HashMap<>();
 
+    private RAMAuthTokenDAO() {}
+
     public static AuthTokenDAO getInstance() {
         return INSTANCE;
     }

@@ -3,9 +3,13 @@ package server;
 import chess.*;
 import com.google.gson.Gson;
 import dataaccess.*;
+import model.AILevel;
 import model.bean.GameBean;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.*;
+import service.ai.ChessAI;
+import util.Util;
+import websocket.commands.ConnectAI;
 import websocket.commands.MakeMoveUC;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -18,6 +22,7 @@ public class WebSocketHandler {
 
     private final Gson gson = new Gson();
     private final Map<Integer, Set<Session>> cache = new HashMap<>();
+    private final Map<Integer, ChessAI> aiCache = new HashMap<>();
     private UserDAO udao;
     private GameDAO gdao;
     private static final ServerMessage.ServerMessageType LOAD_GAME = ServerMessage.ServerMessageType.LOAD_GAME;
@@ -27,6 +32,25 @@ public class WebSocketHandler {
     private int currentGameID;
     private String currentUsername;
     private GameBean currentBean;
+
+    public WebSocketHandler() {
+        new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(10000);
+                    for (Set<Session> sessions : cache.values()) {
+                        for (Session s : sessions) {
+                            if (s.isOpen()) {
+                                s.getRemote().sendPing(null);
+                            }
+                        }
+                    }
+                } catch (InterruptedException | IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }).start();
+    }
 
     @OnWebSocketMessage
     public void onMessage(Session session, String message) {
@@ -65,9 +89,9 @@ public class WebSocketHandler {
             cache.get(currentGameID).add(session);
 
             // note: if this is a join of any kind, it has already been
-            // sent to the server via /games/join from the PostLoginUI client.
+            // sent to the server via HTTP join from the PostLoginUI client.
             switch (command.getCommandType()) {
-                case CONNECT -> connect(gson.fromJson(message, UserGameCommand.class));
+                case CONNECT -> connect(message);
                 case MAKE_MOVE -> makeMove(gson.fromJson(message, MakeMoveUC.class));
                 case RESIGN -> resign();
                 case LEAVE -> leave();
@@ -86,7 +110,7 @@ public class WebSocketHandler {
     }
 
     // COMMAND LOGIC
-    private void connect(UserGameCommand command) throws DataAccessException {
+    private void connect(String cmd) throws DataAccessException {
 
         // send a LOAD_GAME back to the root client
         String game = currentBean.getGame();
@@ -101,6 +125,16 @@ public class WebSocketHandler {
         String observeMsg = username + " is now observing the game.";
         String joinedMsg = username + " joined the game as the " + color + " player.";
         broadcast(color == null ? observeMsg : joinedMsg);
+
+        // add AI game to map if applicable
+        if (gameIsAI()) {
+            AILevel level = (gson.fromJson(cmd, ConnectAI.class)).getLevel();
+            if (!aiCache.containsKey(currentGameID)) aiCache.put(currentGameID, new ChessAI(level));
+
+            // make AI move if it's AI's turn
+            ChessGame chessGame = gson.fromJson(game, ChessGame.class);
+            if (Util.oppositeColor(color) == chessGame.getTeamTurn()) aiMove(chessGame);
+        }
     }
 
     private void makeMove(MakeMoveUC command) throws DataAccessException {
@@ -132,23 +166,11 @@ public class WebSocketHandler {
             return;
         }
 
-        // validate/make the move
-        try {
-            game.makeMove(move);
-        } catch (InvalidMoveException e) {
-            send(root, gson.toJson(new ServerMessage(ERROR, e.getMessage())));
-            return;
-        }
+        // makes the move, updates the game
+        moveLogic(game, move);
 
-        // update the game in memory and in the database
-        currentBean.setGame(gson.toJson(game));
-        gdao.update(currentBean);
-
-        // send a LOAD_GAME back to all clients in the game
-        for (Session s : cache.get(currentGameID)) send(s, gson.toJson(new ServerMessage(LOAD_GAME, currentBean.getGame())));
-
-        // send a NOTIFICATION to everyone except the root client
-        broadcast("The " + getColorString() + " player made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString());
+        // gets AI move and calls moveLogic()
+        if (gameIsAI()) aiMove(game);
     }
 
     private void resign() throws DataAccessException {
@@ -198,6 +220,45 @@ public class WebSocketHandler {
         broadcast(color == null ? currentUsername + " left the game." : currentUsername + " (the " + color + " player) left the game.");
     }
 
+    private void aiMove(ChessGame game) throws DataAccessException {
+        // get ideal move given game and team
+        ChessGame.TeamColor aiColor = Util.oppositeColor(getColor());
+        ChessAI ai = aiCache.get(currentGameID);
+        ChessMove move = ai.getMove(game, aiColor);
+        moveLogic(game, move);
+    }
+
+    private void moveLogic(ChessGame game, ChessMove move) throws DataAccessException {
+        // validate/make the move
+        try {
+            game.makeMove(move);
+        } catch (InvalidMoveException e) {
+            if (!gameIsAI()) send(root, gson.toJson(new ServerMessage(ERROR, e.getMessage())));
+            else {
+                String msg = gson.toJson(new ServerMessage(NOTIFICATION, "The AI tried making an invalid move. " + currentUsername + " wins!"));
+                send(root, msg);
+                broadcast(msg);
+                game.setIsOver(true);
+                updateGame(game);
+            }
+            return;
+        }
+
+        // update the game in memory and in the database
+        updateGame(game);
+
+        // send a LOAD_GAME back to all clients in the game
+        for (Session s : cache.get(currentGameID)) send(s, gson.toJson(new ServerMessage(LOAD_GAME, currentBean.getGame())));
+
+        // send a NOTIFICATION to everyone except the root client (include root client if it's an AI move)
+        boolean aiTurn = game.getTeamTurn() == getColor();
+        String username = aiTurn ? "AI" : currentUsername;
+        ChessGame.TeamColor color = aiTurn ? Util.oppositeColor(getColor()) : getColor();
+        String msg = "The " + color.toString().toLowerCase() + " player (" + username + ") made a move: " + move.getStartPosition().toString() + " -> " + move.getEndPosition().toString();
+        broadcast(msg);
+        if (gameIsAI() && aiTurn) send(root, gson.toJson(new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, msg)));
+    }
+
     // HELPER METHODS
     private void send(Session session, String message) {
         try {
@@ -215,6 +276,11 @@ public class WebSocketHandler {
         send(root, gson.toJson(new ServerMessage(ERROR, message)));
     }
 
+    private void updateGame(ChessGame game) throws DataAccessException {
+        currentBean.setGame(gson.toJson(game));
+        gdao.update(currentBean);
+    }
+
     private String getColorString() {
         if (currentBean.getWhiteUsername() != null && Objects.equals(currentBean.getWhiteUsername(), currentUsername)) return "white";
         else if (currentBean.getBlackUsername() != null && Objects.equals(currentBean.getBlackUsername(), currentUsername)) return "black";
@@ -229,5 +295,10 @@ public class WebSocketHandler {
 
     private boolean gameIsFull() {
         return currentBean.getBlackUsername() != null && currentBean.getWhiteUsername() != null;
+    }
+
+    private boolean gameIsAI() {
+        if (currentBean.getWhiteUsername() == null || currentBean.getBlackUsername() == null) return false;
+        return currentBean.getWhiteUsername().equals(Util.AI_USERNAME) || currentBean.getBlackUsername().equals(Util.AI_USERNAME);
     }
 }
