@@ -4,6 +4,7 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 import chess.InvalidMoveException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class FENTests {
@@ -17,13 +18,12 @@ public class FENTests {
         game.makeMove(new ChessMove(new ChessPosition(7, 8), new ChessPosition(5, 8), null));
         game.makeMove(new ChessMove(new ChessPosition(3, 1), new ChessPosition(1, 2), null));
         game.makeMove(new ChessMove(new ChessPosition(6, 1), new ChessPosition(8, 2), null));
-        System.out.println(game.toFEN());
+        Assertions.assertNotNull(game.toFEN());
     }
 
     @Test
     public void testFENToGame() {
         String fen = "rnbqknbr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
         ChessGame game = new ChessGame(fen);
-        System.out.println('d');
     }
 }

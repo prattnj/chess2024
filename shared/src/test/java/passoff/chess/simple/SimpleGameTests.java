@@ -18,12 +18,10 @@ public class SimpleGameTests {
     @Test
     public void testMakeMove() {
         sg.makeMove(new int[]{1, 0, 3, 0});
-        System.out.println();
     }
 
     @Test
     public void testValidMoves() {
         LinkedList<int[]> moves = sg.validMoves(1);
-        System.out.println();
     }
 }
